@@ -1,0 +1,28 @@
+{
+  "name": "rolo-elm-pages-base",
+  "private": true,
+  "version": "1.0.0",
+  "postinstall": "elm-tooling install",
+  "scripts": {
+    "dev": "run-s dev:tw dev:pages dev:serve",
+    "dev:tw": "NODE_ENV=development postcss -c ./postcss.config.js -o ./beta-style.css ./style.css",
+    "dev:pages": "elm-pages-beta",
+    "dev:serve": "http-server dist",
+    "prod": "run-s build:tw build:pages",
+    "build:tw": "NODE_ENV=production postcss style.css -o beta-style.css",
+    "build:pages": "NODE_ENV=production elm-pages-beta"
+  },
+  "dependencies": {
+    "@tailwindcss/typography": "^0.4.0",
+    "autoprefixer": "^10.2.4",
+    "elm-pages": "file:../elm-pages",
+    "node-sass": "4.14.1",
+    "tailwindcss": "^2.0.2"
+  },
+  "devDependencies": {
+    "elm-oembed": "0.0.6",
+    "elm-tooling": "^1.1.0",
+    "nodemon": "^2.0.7",
+    "npm-run-all": "^4.1.5"
+  }
+}

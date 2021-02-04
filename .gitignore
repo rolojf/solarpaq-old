@@ -1,0 +1,34 @@
+node_modules/
+elm-stuff/
+dist/
+.cache/
+gen/
+# Ignore docs files
+.vscode
+
+# Numerous always-ignore extensions
+*.diff
+*.err
+*.orig
+*.log
+*.rej
+*.swo
+*.swp
+*.zip
+*.vi
+*~
+# *.lock
+
+# OS or Editor folders
+*.scssc
+.DS_Store
+Thumbs.db
+.cache
+.project
+.settings
+.tmproj
+.asset-cache
+
+# Agregados por mi a este proyecto
+/beta-style.css
+/TAGS

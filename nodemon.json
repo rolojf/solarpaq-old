@@ -1,0 +1,19 @@
+{
+  "restartable": "rs",
+  "ignore": [
+    ".git",
+    "node_modules/**/node_modules"
+  ],
+  "verbose": true,
+  "watch": [
+    "content/",
+    "src/",
+    "static/",
+    "./beta-index.js",
+    "./beta-style.css"
+  ],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "ext": "elm, html, md, emu, json, js, css"
+}
