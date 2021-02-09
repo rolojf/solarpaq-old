@@ -20,7 +20,12 @@ type alias BlogPost =
 type alias Page =
     { title : String }
 
+
 type alias Pagina =
     { title : String
     , description : String
     }
+
+
+type alias SelComp1 =
+    { title : String }

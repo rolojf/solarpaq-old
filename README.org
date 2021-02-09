@@ -1,0 +1,30 @@
+* Instalación base
+Para incorporar las últimas mejoras entre releases, este subdirectorio ~websites/base-elm-pages~ hace referencia a ~base/elm-pages~, que es clonado de tal cual excepto una modificación:
+
+En ~websites/base-elm-pages/elm.json~ agregué referencia a ~elm-pages/src~ así:
+#+begin_src json
+"source-directories": [
+        "src",
+        "gen",
+        "../elm-pages/src"
+    ],
+#+end_src
+E instalé manualmente las dependencias que me pidió elm.
+
+
+En package.json también
+#+begin_src json
+  "devDependencies": {
+    "elm-tooling": "^0.6.3",
+    "elm-oembed": "0.0.6",
+    "elm-pages": "file:../elm-pages"
+}
+#+end_src
+
+** Corrigiendo errorores al ejecutar ~$npx elm-pages-beta~:
+Hay que instalar global "elm-optimize-level2"
+
+** Actualizaciones en lo futuro
+Podemos actualizar el directorio clonado ~elm-pages~ para incorporar los cambios en este framework.
+Independientemente podemos actualizar los archivos npm y los archivos de elm.
+

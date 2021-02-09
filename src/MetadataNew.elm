@@ -4,7 +4,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Template.BlogPost
 import Template.Page
 import TemplateType exposing (TemplateType)
-import Template.BlogPost
+
 
 decoder : Decoder TemplateType
 decoder =
@@ -24,7 +24,10 @@ decoder =
                         Template.BlogPost.decoder
                             |> Decode.map TemplateType.BlogPost
 
-                    _ ->
-                        Decode.fail <| "Unexpected page \"type\" " ++ pageType
-            )
+                    "selComp1" ->
+                        Decode.field "title" Decode.string
+                            |> Decode.map (\title -> TemplateType.SelComp1 { title = title })
 
+                    _ ->
+                        Decode.fail <| "Pagina con \"tipo\" inesperado " ++ pageType
+            )
