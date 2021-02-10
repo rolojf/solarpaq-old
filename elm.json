@@ -26,6 +26,7 @@
             "elm/url": "1.0.0",
             "elm-community/dict-extra": "2.4.0",
             "elm-community/list-extra": "8.2.4",
+            "fapian/elm-html-aria": "1.4.0",
             "justinmimbs/date": "3.2.1",
             "mdgriffith/elm-markup": "3.0.1",
             "miniBill/elm-codec": "1.2.0",
@@ -43,11 +44,9 @@
             "elm/random": "1.0.0",
             "elm/regex": "1.0.0",
             "elm/virtual-dom": "1.0.2",
-            "elm-community/result-extra": "2.4.0",
             "fredcy/elm-parseint": "2.0.1",
             "justinmimbs/time-extra": "1.1.0",
             "lazamar/dict-parser": "1.0.2",
-            "lukewestby/elm-string-interpolate": "1.0.4",
             "mgold/elm-nonempty-list": "4.1.0",
             "rtfeldman/elm-hex": "1.0.0",
             "ryannhg/date-format": "2.3.0"
@@ -57,6 +56,9 @@
         "direct": {
             "elm-explorations/test": "1.2.2"
         },
-        "indirect": {}
+        "indirect": {
+            "elm-community/result-extra": "2.4.0",
+            "lukewestby/elm-string-interpolate": "1.0.4"
+        }
     }
 }
