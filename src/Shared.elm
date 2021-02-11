@@ -409,21 +409,8 @@ myHiddenBlock =
         [ class "hidden md:block" ]
         [ div
             [ class "ml-4 flex items-center md:ml-6" ]
-            [ Html.button
-                [ class "bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
-
-                -- , Html.Events.onClick ToggleMobileMenu
-                ]
-                [ Html.span
-                    [ class "sr-only" ]
-                    [ Html.text "View notifications" ]
-
-                -- Heroicon name: outline/bell
-                , heroiconOutlineBell
-                ]
-
             -- Profile dropdown --
-            , div
+            [ div
                 [ class "ml-3 relative" ]
                 [ div
                     []
@@ -498,13 +485,6 @@ myHiddenMenu =
                             [ class "text-sm font-medium text-gray-400" ]
                             [ Html.text "tom@example.com" ]
                         ]
-                    ]
-                , Html.button
-                    [ class "ml-auto bg-gray-800 flex-shrink-0 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" ]
-                    [ Html.span
-                        [ class "sr-only" ]
-                        [ Html.text "View notifications" ]
-                    , heroiconOutlineBell
                     ]
                 ]
             , div [ class "mt-3 px-2 space-y-1" ]
@@ -622,32 +602,6 @@ heroiconOutlineX modelo =
             , Svg.Attributes.strokeLinejoin "round"
             , Svg.Attributes.strokeWidth "2"
             , Svg.Attributes.d "M6 18L18 6M6 6l12 12"
-            ]
-            []
-        ]
-
-
-
--- Heroicon name: outline/bell --
-
-
-heroiconOutlineBell : Html msg
-heroiconOutlineBell =
-    svg
-        [ Svg.Attributes.class "h-6 w-6"
-
-        --, mlns="http://www.w3.org/2000/svg"
-        , Svg.Attributes.fill "none"
-        , Svg.Attributes.viewBox "0 0 24 24"
-        , Svg.Attributes.stroke "currentColor"
-
-        --, aria-hidden="true"
-        ]
-        [ path
-            [ Svg.Attributes.strokeLinecap "round"
-            , Svg.Attributes.strokeLinejoin "round"
-            , Svg.Attributes.strokeWidth "2"
-            , Svg.Attributes.d "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
             ]
             []
         ]
