@@ -174,7 +174,7 @@ view :
 view stars page model toMsg pageView =
     { body =
         div []
-            [ myNav
+            [ myNav model |> Html.map toMsg
             , Html.header
                 [ class "bg-white shadow-sm" ]
                 [ div
@@ -188,14 +188,18 @@ view stars page model toMsg pageView =
                 []
                 [ div
                     [ class "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8" ]
-                    pageView.body
+                    ((incrementView model
+                        |> Html.map toMsg
+                     )
+                        :: pageView.body
+                    )
                 ]
             , Html.footer
-                    [ class "px-4 py-4 sm:px-0" ]
-                    [ div
-                        [ class "border-4 border-dashed border-gray-200 rounded-lg h-96" ]
-                        []
-                    ]
+                [ class "px-4 py-4 sm:px-0" ]
+                [ div
+                    [ class "border-4 border-dashed border-gray-200 rounded-lg h-96" ]
+                    []
+                ]
             ]
     , title = pageView.title
     }
@@ -342,15 +346,19 @@ highlightableLink currentPath linkDirectory displayName =
         ]
         [ Html.text displayName ]
 
-myNav : Html msg
-myNav =
+
+myNav : Model -> Html Msg
+myNav modelo =
     Html.nav
         [ class "bg-gray-800" ]
         [ div
             [ class "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ]
-            [ myLogoAndLinks
-            , myHiddenBlock
-            , mobileMenuButton
+            [ div
+                [ class "flex items-center justify-between h-16" ]
+                [ myLogoAndLinks
+                , myHiddenBlock
+                ]
+            , mobileMenuButton modelo
             ]
         , myHiddenMenu
         ]
@@ -362,46 +370,50 @@ myNav =
    Open: "block", closed: "hidden"
 -}
 
+
 myLogoAndLinks : Html msg
 myLogoAndLinks =
     div
-        [ class "flex items-center justify-between h-16" ]
+        [ class "flex items-center" ]
         [ div
-            [ class "flex items-center" ]
+            -- EL LOGO
+            [ class "flex-shrink-0" ]
+            [ Html.img
+                [ class "h-8 w-8"
+                , Attr.src "https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg"
+                , Attr.alt "Workflow"
+                ]
+                []
+            ]
+        , div
+            -- LIGAS DE NAVEGACION
+            [ class "hidden md:block" ]
             [ div
-                [ class "flex-shrink-0" ]
-                [ Html.img
-                    [ class "h-8 w-8"
-                    , Attr.src "https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg"
-                    , Attr.alt "Workflow"
+                [ class "ml-10 flex items-baseline space-x-4" ]
+                -- Current: "bg-gray-900 text-white",
+                -- Default: "text-gray-300 hover:bg-gray-700 hover:text-white"
+                (Html.a
+                    [ Attr.href "#"
+                    , class "bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
                     ]
-                    []
-                ]
-            , div
-                [ class "hidden md:block" ]
-                [ div
-                    [ class "ml-10 flex items-baseline space-x-4" ]
-                    -- Current: "bg-gray-900 text-white",
-                    -- Default: "text-gray-300 hover:bg-gray-700 hover:text-white"
-                    (Html.a
-                        [ Attr.href "#"
-                        , class "bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
-                        ]
-                        [ Html.text "Dashboard" ]
-                        :: ligasChulas " text-sm"
-                    )
-                ]
+                    [ Html.text "Dashboard" ]
+                    :: ligasChulas " text-sm"
+                )
             ]
         ]
 
-myHiddenBlock : Html msg
+
+myHiddenBlock : Html Msg
 myHiddenBlock =
     div
         [ class "hidden md:block" ]
         [ div
             [ class "ml-4 flex items-center md:ml-6" ]
             [ Html.button
-                [ class "bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" ]
+                [ class "bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+
+                -- , Html.Events.onClick ToggleMobileMenu
+                ]
                 [ Html.span
                     [ class "sr-only" ]
                     [ Html.text "View notifications" ]
@@ -449,6 +461,7 @@ myHiddenBlock =
                 ]
             ]
         ]
+
 
 myHiddenMenu : Html msg
 myHiddenMenu =
@@ -547,16 +560,21 @@ menuItems clases =
 
 
 
-{-
-     Heroicon name: outline/menu
-     Menu open: "hidden", Menu closed: "block"
-   -
--}
+-- Heroicon name: outline/menu
+-- Menu open: "hidden", Menu closed: "block"
 
-heroiconOutlineMenu : Html msg
-heroiconOutlineMenu =
+
+heroiconOutlineMenu : Model -> Html msg
+heroiconOutlineMenu modelo =
     svg
-        [ Svg.Attributes.class "block h-6 w-6"
+        [ Svg.Attributes.class <|
+            "h-6 w-6 "
+                ++ (if modelo.showMobileMenu then
+                        "hidden"
+
+                    else
+                        "block"
+                   )
 
         -- , xmlns="http://www.w3.org/2000/svg"
         , Svg.Attributes.fill "none"
@@ -579,10 +597,18 @@ heroiconOutlineMenu =
 -- Heroicon name: outline/x
 --  Menu open: "block", Menu closed: "hidden"
 
-heroiconOutlineX : Html msg
-heroiconOutlineX =
+
+heroiconOutlineX : Model -> Html msg
+heroiconOutlineX modelo =
     svg
-        [ Svg.Attributes.class "hidden h-6 w-6"
+        [ Svg.Attributes.class <|
+            "h-6 w-6 "
+                ++ (if modelo.showMobileMenu then
+                        "block"
+
+                    else
+                        "hidden"
+                   )
 
         -- xmlns="http://www.w3.org/2000/svg"
         , Svg.Attributes.fill "none"
@@ -603,6 +629,7 @@ heroiconOutlineX =
 
 
 -- Heroicon name: outline/bell --
+
 
 heroiconOutlineBell : Html msg
 heroiconOutlineBell =
@@ -625,16 +652,17 @@ heroiconOutlineBell =
             []
         ]
 
-mobileMenuButton : Html msg
-mobileMenuButton =
+
+mobileMenuButton : Model -> Html Msg
+mobileMenuButton modelo =
     div
         [ class "-mr-2 flex md:hidden" ]
         [ Html.button
             [ class "bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
-            --,  Html.Events.onClick ToggleMobileMenu
+            , Html.Events.onClick ToggleMobileMenu
             ]
             [ Html.span [ class "sr-only" ] [ Html.text "Open main menu" ]
-            , heroiconOutlineMenu
-            , heroiconOutlineX
+            , heroiconOutlineMenu modelo
+            , heroiconOutlineX modelo
             ]
         ]
