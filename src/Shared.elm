@@ -83,6 +83,7 @@ type Msg
         , fragment : Maybe String
         }
     | ToggleMobileMenu
+    | ToggleProfileMenu
     | Increment
     | SharedMsg SharedMsg
 
@@ -98,6 +99,7 @@ type SharedMsg
 type alias Model =
     { showMobileMenu : Bool
     , counter : Int
+    , showProfileMenu : Bool
     }
 
 
@@ -121,6 +123,7 @@ init :
 init maybePagePath =
     ( { showMobileMenu = False
       , counter = 0
+      , showProfileMenu = False
       }
     , Cmd.none
     )
@@ -134,6 +137,9 @@ update msg model =
 
         ToggleMobileMenu ->
             ( { model | showMobileMenu = not model.showMobileMenu }, Cmd.none )
+
+        ToggleProfileMenu ->
+            ( { model | showProfileMenu = not model.showProfileMenu }, Cmd.none )
 
         Increment ->
             ( { model | counter = model.counter + 1 }, Cmd.none )
@@ -356,7 +362,7 @@ myNav modelo =
             [ div
                 [ class "flex items-center justify-between h-16" ]
                 [ myLogoAndLinks
-                , myHiddenBlock
+                , myHiddenBlock modelo
                 , mobileMenuButton modelo
                 ]
             ]
@@ -403,8 +409,8 @@ myLogoAndLinks =
         ]
 
 
-myHiddenBlock : Html Msg
-myHiddenBlock =
+myHiddenBlock : Model -> Html Msg
+myHiddenBlock modelo =
     div
         [ class "hidden md:block" ]
         [ div
@@ -418,6 +424,7 @@ myHiddenBlock =
                         [ class "max-w-xs bg-gray-800 rounded-full flex items-center text-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
                         , Attr.id "user-menu"
                         , Aria.ariaHasPopup "true"
+                        , Html.Events.onClick ToggleProfileMenu
                         ]
                         [ Html.span [ class "sr-only" ] [ Html.text "Open user menu" ]
                         , Html.img
@@ -437,14 +444,18 @@ myHiddenBlock =
                      From: "transform opacity-100 scale-100"
                      To: "transform opacity-0 scale-95"
                 -}
-                , div
-                    [ class "origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5"
-                    , Aria.role "menu"
+                , if modelo.showProfileMenu then
+                    div
+                        [ class "origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5"
+                        , Aria.role "menu"
 
-                    -- , Aria.aria-orientation "vertical"
-                    , Aria.ariaLabelledby "user-menu"
-                    ]
-                    (menuItems "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100")
+                        -- , Aria.aria-orientation "vertical"
+                        , Aria.ariaLabelledby "user-menu"
+                        ]
+                        (menuItems "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100")
+
+                  else
+                    Html.i [] []
                 ]
             ]
         ]
@@ -557,17 +568,10 @@ menuItems clases =
 -- Menu open: "hidden", Menu closed: "block"
 
 
-heroiconOutlineMenu : Model -> Html msg
-heroiconOutlineMenu modelo =
+heroiconOutlineMenu : Html msg
+heroiconOutlineMenu =
     svg
-        [ Svg.Attributes.class <|
-            "h-6 w-6 "
-                ++ (if modelo.showMobileMenu then
-                        "hidden"
-
-                    else
-                        "block"
-                   )
+        [ Svg.Attributes.class "h-6 w-6 block"
 
         -- , xmlns="http://www.w3.org/2000/svg"
         , Svg.Attributes.fill "none"
@@ -591,17 +595,10 @@ heroiconOutlineMenu modelo =
 --  Menu open: "block", Menu closed: "hidden"
 
 
-heroiconOutlineX : Model -> Html msg
-heroiconOutlineX modelo =
+heroiconOutlineX : Html msg
+heroiconOutlineX =
     svg
-        [ Svg.Attributes.class <|
-            "h-6 w-6 "
-                ++ (if modelo.showMobileMenu then
-                        "block"
-
-                    else
-                        "hidden"
-                   )
+        [ Svg.Attributes.class "h-6 w-6 block"
 
         -- xmlns="http://www.w3.org/2000/svg"
         , Svg.Attributes.fill "none"
@@ -629,7 +626,10 @@ mobileMenuButton modelo =
             , Html.Events.onClick ToggleMobileMenu
             ]
             [ Html.span [ class "sr-only" ] [ Html.text "Open main menu" ]
-            , heroiconOutlineMenu modelo
-            , heroiconOutlineX modelo
+            , if modelo.showMobileMenu then
+                heroiconOutlineX
+
+              else
+                heroiconOutlineMenu
             ]
         ]
