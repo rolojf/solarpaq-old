@@ -357,8 +357,8 @@ myNav modelo =
                 [ class "flex items-center justify-between h-16" ]
                 [ myLogoAndLinks
                 , myHiddenBlock
+                , mobileMenuButton modelo
                 ]
-            , mobileMenuButton modelo
             ]
         , myHiddenMenu
         ]
