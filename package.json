@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "postinstall": "elm-tooling install",
   "scripts": {
+    "old": "elm-pages develop",
     "dev": "run-s dev:tw dev:pages dev:serve",
     "dev:tw": "NODE_ENV=development postcss -c ./postcss.config.js -o ./beta-style.css ./style.css",
     "dev:pages": "elm-pages-beta",
