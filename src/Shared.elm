@@ -85,7 +85,10 @@ type Msg
     | ToggleProfileMenu
     | Increment
     | SharedMsg SharedMsg
-    -- | Contesto String
+
+
+
+-- | Contesto String
 
 
 type alias StaticData =
@@ -193,13 +196,18 @@ view stars page model toMsg pageView =
             , Html.main_
                 []
                 [ div
-                    [ class "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8" ]
+                    [ class "max-w-7xl mx-auto sm:px-6 lg:px-8" ]
                     ((incrementView model
                         |> Html.map toMsg
                      )
                         :: pageView.body
                     )
-                    , viewChallenge model
+                , div
+                    []
+                    [ viewFormulario
+
+                    -- , viewChallenge model
+                    ]
                 ]
             , Html.footer
                 [ class "px-4 py-4 sm:px-0" ]
@@ -557,6 +565,7 @@ viewChallenge model =
                         , Attr.id "valor"
                         , class "form-input"
                         , Attr.placeholder "?"
+
                         -- , Html.Events.onInput Contesto
                         ]
                         []
@@ -580,5 +589,188 @@ viewChallenge model =
                   else
                     Html.p [] []
                 ]
+            ]
+        ]
+
+
+viewCampoNombre =
+    div
+        []
+        [ Html.label
+            [ Attr.for "first_name"
+            , class "block text-sm font-medium text-gray-700"
+            ]
+            [ Html.text "First name" ]
+        , div
+            [ class "mt-1" ]
+            [ Html.input
+                [ Attr.type_ "text"
+                , Attr.name "first_name"
+                , Attr.id "first_name"
+                , Attr.autocomplete True -- "given-name"
+                , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                ]
+                []
+            ]
+        ]
+
+
+viewCampoApellido =
+    div []
+        [ Html.label
+            [ Attr.for "last_name"
+            , class "block text-sm font-medium text-gray-700"
+            ]
+            [ Html.text "Last name" ]
+        , div
+            [ class "mt-1" ]
+            [ Html.input
+                [ Attr.type_ "text"
+                , Attr.name "last_name"
+                , Attr.id "last_name"
+                , Attr.autocomplete True -- "family-name"
+                , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                ]
+                []
+            ]
+        ]
+
+
+viewCampoCorreo =
+    div
+        [ class "sm:col-span-2" ]
+        [ Html.label
+            [ Attr.for "email"
+            , class "block text-sm font-medium text-gray-700"
+            ]
+            [ Html.text "Email" ]
+        , div
+            [ class "mt-1" ]
+            [ Html.input
+                [ Attr.id "email"
+                , Attr.name "email"
+                , Attr.type_ "email"
+                , Attr.autocomplete True --"email"
+                , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                ]
+                []
+            ]
+        ]
+
+
+viewCampoTelefono =
+    div
+        [ class "sm:col-span-2" ]
+        [ div
+            [ class "flex justify-between" ]
+            [ Html.label
+                [ Attr.for "phone"
+                , class "block text-sm font-medium text-gray-700"
+                ]
+                [ Html.text "Phone" ]
+            , Html.span
+                [ Attr.id "phone_description"
+                , class "text-sm text-gray-500"
+                ]
+                [ Html.text "Optional" ]
+            ]
+        , div
+            [ class "mt-1" ]
+            [ Html.input
+                [ Attr.type_ "text"
+                , Attr.name "phone"
+                , Attr.id "phone"
+                , Attr.autocomplete True -- "tel"
+                , Aria.ariaDescribedby "phone_description"
+                , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                ]
+                []
+            ]
+        ]
+
+
+viewCampoComment =
+    div
+        [ class "sm:col-span-2" ]
+        [ div
+            [ class "flex justify-between" ]
+            [ Html.label
+                [ Attr.for "how_can_we_help"
+                , class "block text-sm font-medium text-gray-700"
+                ]
+                [ Html.text "How can we help you?" ]
+            , Html.span
+                [ Attr.id "how_can_we_help_description"
+                , class "text-sm text-gray-500"
+                ]
+                [ Html.text ">Max. 500 characters" ]
+            ]
+        , div
+            [ class "mt-1" ]
+            [ Html.textarea
+                [ Attr.id "how_can_we_help"
+                , Attr.name "how_can_we_help"
+                , Aria.ariaDescribedby "how_can_we_help_description"
+                , Attr.rows 4
+                , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                ]
+                []
+            ]
+        ]
+
+
+viewComoSupoDeNos =
+    div
+        [ class "sm:col-span-2" ]
+        [ Html.label
+            [ Attr.for "how_did_you_hear_about_us"
+            , class "block text-sm font-medium text-gray-700"
+            ]
+            [ Html.text "How did you hear about us?" ]
+        , div
+            [ class "mt-1" ]
+            [ Html.input
+                [ Attr.type_ "text"
+                , Attr.name "how_did_you_hear_about_us"
+                , Attr.id "how_did_you_hear_about_us"
+                , class "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                ]
+                []
+            ]
+        ]
+
+
+viewBotonSubmit =
+    div
+        [ class "text-right sm:col-span-2" ]
+        [ Html.button
+            [ Attr.type_ "submit"
+            , class "inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            ]
+            [ Html.text "Submit" ]
+        ]
+
+
+viewFormulario =
+    div
+        [ class "max-w-md mx-auto sm:max-w-lg lg:mx-0" ]
+        [ Html.h2
+            [ class "text-3xl font-extrabold tracking-tight sm:text-4xl" ]
+            [ Html.text "Let's work together" ]
+        , Html.p
+            [ class "mt-4 text-lg text-gray-500 sm:mt-3" ]
+            [ Html.text "We’d love to hear from you! Send us a message using the form opposite, or email us. We’d love to hear from you! Send us a message using the form opposite, or email us." ]
+        , Html.form
+            [ Attr.action "#"
+            , Attr.method "POST"
+            , class "mt-9 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8"
+            ]
+            [ viewCampoNombre
+            , viewCampoApellido
+            , viewCampoCorreo
+            , viewCampoTelefono
+            , viewCampoComment
+            , viewComoSupoDeNos
+            , viewBotonSubmit
             ]
         ]
