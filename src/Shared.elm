@@ -85,6 +85,7 @@ type Msg
     | ToggleProfileMenu
     | Increment
     | SharedMsg SharedMsg
+    -- | Contesto String
 
 
 type alias StaticData =
@@ -198,12 +199,13 @@ view stars page model toMsg pageView =
                      )
                         :: pageView.body
                     )
+                    , viewChallenge model
                 ]
             , Html.footer
                 [ class "px-4 py-4 sm:px-0" ]
                 [ div
                     [ class "border-4 border-dashed border-gray-200 rounded-lg h-96" ]
-                    [ Html.text <| Debug.toString <| PagePath.toString page.path
+                    [ Html.text "Nada pues" -- <| Debug.toString <| PagePath.toString page.path
                     ]
                 ]
             ]
@@ -528,5 +530,55 @@ mobileMenuButton modelo =
 
               else
                 heroiconOutlineMenu
+            ]
+        ]
+
+
+viewChallenge : Model -> Html msg
+viewChallenge model =
+    div [ class "la-base-modal" ]
+        [ div [ class "mm-fondo" ]
+            [ Html.h3 [ class "mm-titulo" ]
+                [ Html.text "Validación Rápida" ]
+            , Html.p [ class "mm-explic" ]
+                [ Html.text "Contesta lo siguiente para validar que eres humano y no un bot" ]
+            , div [ class "mm-fondo-reto" ]
+                [ Html.p [ class "mm-reto" ] [ Html.text "Resuleve la siguiente ecuación: " ]
+                , div [ class "mm-acomodo-ecuacion" ]
+                    [ Html.p []
+                        [ Html.text "7 + " ]
+                    , Html.label
+                        [ class "sr-only"
+                        , Attr.for "valor"
+                        ]
+                        [ Html.text "número" ]
+                    , Html.input
+                        [ class "mm-campo"
+                        , Attr.id "valor"
+                        , class "form-input"
+                        , Attr.placeholder "?"
+                        -- , Html.Events.onInput Contesto
+                        ]
+                        []
+                    , Html.p []
+                        [ Html.text "= 11" ]
+                    ]
+                , if model.counter >= 1 then
+                    Html.p
+                        [ class
+                            ("text-right mx-4 "
+                                ++ (if model.counter == 1 then
+                                        "text-black"
+
+                                    else
+                                        "text-red-500"
+                                   )
+                            )
+                        ]
+                        [ Html.text "Again please!" ]
+
+                  else
+                    Html.p [] []
+                ]
             ]
         ]
