@@ -4,8 +4,14 @@ import Data.Author exposing (Author)
 import Date exposing (Date)
 
 
+type alias Liga =
+    { direccion : String
+    , queDice : String
+    }
+
+
 type alias BlogIndex =
-    {}
+    {  menu : List Liga }
 
 
 type alias BlogPost =
@@ -14,18 +20,24 @@ type alias BlogPost =
     , published : Date
     , author : Author
     , draft : Bool
+    , menu : List Liga
     }
 
 
 type alias Page =
-    { title : String }
+    { title : String
+    , menu : List Liga
+    }
 
 
 type alias Pagina =
     { title : String
     , description : String
+    , menu : List Liga
     }
 
 
 type alias SelComp1 =
-    { title : String }
+    { title : String
+    , menu : List Liga
+    }

@@ -1,9 +1,9 @@
 module Template.Page exposing (Model, Msg, decoder, template)
 
-import Html exposing (Html, div)
-import Html.Attributes as Attr exposing (class)
 import Head
 import Head.Seo as Seo
+import Html exposing (Html, div)
+import Html.Attributes as Attr exposing (class)
 import Json.Decode as Decode
 import Pages exposing (images)
 import Pages.PagePath exposing (PagePath)
@@ -30,8 +30,18 @@ template =
 
 decoder : Decode.Decoder Page
 decoder =
-    Decode.map Page
+    Decode.map2 Page
         (Decode.field "title" Decode.string)
+        (Decode.succeed
+            -- definir aquí como va el menú
+            [ { direccion = "cuatro"
+              , queDice = "Four"
+              }
+            , { direccion = "cinco"
+              , queDice = "Five"
+              }
+            ]
+        )
 
 
 head :
@@ -65,6 +75,6 @@ view allMetadata { metadata } rendered =
         [ [ div [ class "columna" ]
                 (Tuple.second rendered |> List.map (Html.map never))
           ]
-            |> div [ class "text-column"]
+            |> div [ class "text-column" ]
         ]
     }

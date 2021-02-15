@@ -61,8 +61,18 @@ staticData siteMetadata =
 
 decoder : Decode.Decoder SelComp1
 decoder =
-    Decode.map SelComp1
+    Decode.map2 SelComp1
         (Decode.field "title" Decode.string)
+        (Decode.succeed
+            -- definir aquí como va el menú
+            [ { direccion = "ocho"
+              , queDice = "Eight"
+              }
+            , { direccion = "nueve"
+              , queDice = "Nine"
+              }
+            ]
+        )
 
 
 head : StaticPayload SelComp1 StaticData -> List (Head.Tag Pages.PathKey)

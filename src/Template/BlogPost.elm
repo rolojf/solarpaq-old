@@ -36,7 +36,7 @@ template =
 
 decoder : Decode.Decoder BlogPost
 decoder =
-    Decode.map5 BlogPost
+    Decode.map6 BlogPost
         (Decode.field "title" Decode.string)
         (Decode.field "description" Decode.string)
         (Decode.field "published"
@@ -57,6 +57,15 @@ decoder =
         (Decode.field "draft" Decode.bool
             |> Decode.maybe
             |> Decode.map (Maybe.withDefault False)
+        )
+        (Decode.succeed -- definir aquí como va el menú
+            [ { direccion = "uno"
+              , queDice = "One"
+              }
+            , { direccion = "dos"
+              , queDice = "Two"
+              }
+            ]
         )
 
 

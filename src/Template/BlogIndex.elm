@@ -1,10 +1,11 @@
-module Template.BlogIndex exposing (Model, Msg, template)
+module Template.BlogIndex exposing (Model, Msg, template, decoder)
 
 import Html exposing (Html, div)
 import Html.Attributes as Attr exposing (class)
 import Head
 import Head.Seo as Seo
 import Index
+import Json.Decode as Decode
 import Pages exposing (images)
 import Pages.PagePath as PagePath exposing (PagePath)
 import Pages.StaticHttp as StaticHttp
@@ -18,6 +19,19 @@ import TemplateType exposing (TemplateType)
 type Msg
     = Msg
 
+decoder : Decode.Decoder BlogIndex
+decoder =
+    Decode.map BlogIndex
+        (Decode.succeed
+            -- definir aquí como va el menú
+            [ { direccion = "blog"
+              , queDice = "SixMyBlog"
+              }
+            , { direccion = "blog/hello"
+              , queDice = "Seven"
+              }
+            ]
+        )
 
 template : TemplateWithState BlogIndex StaticData Model Msg
 template =
