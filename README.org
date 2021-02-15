@@ -1,7 +1,8 @@
-* Instalación base
-Para incorporar las últimas mejoras entre releases, este subdirectorio ~websites/base-elm-pages~ hace referencia a ~base/elm-pages~, que es clonado de tal cual excepto una modificación:
+* Notas particulares de la instalación del framework: elm-pages
+** Para la inInstalación base
+Para incorporar las últimas mejoras entre releases, en package.json se hace referencia al subdirectorio  ~base/elm-pages~, que es clonado de tal cual excepto una modificación:
 
-En ~websites/base-elm-pages/elm.json~ agregué referencia a ~elm-pages/src~ así:
+Y en en  ~elm.json~ agregué referencia a ~elm-pages/src~ así:
 #+begin_src json
 "source-directories": [
         "src",
@@ -9,10 +10,11 @@ En ~websites/base-elm-pages/elm.json~ agregué referencia a ~elm-pages/src~ así
         "../elm-pages/src"
     ],
 #+end_src
-E instalé manualmente las dependencias que me pidió elm.
 
+Adicionalmente instalé manualmente las dependencias que pide elm-pages.
 
 En package.json también
+
 #+begin_src json
   "devDependencies": {
     "elm-tooling": "^0.6.3",
@@ -21,10 +23,16 @@ En package.json también
 }
 #+end_src
 
-** Corrigiendo errorores al ejecutar ~$npx elm-pages-beta~:
+*** Corrigiendo errorores al ejecutar ~$npx elm-pages-beta~:
 Hay que instalar global "elm-optimize-level2"
 
-** Actualizaciones en lo futuro
+*** Actualizaciones en lo futuro
 Podemos actualizar el directorio clonado ~elm-pages~ para incorporar los cambios en este framework.
 Independientemente podemos actualizar los archivos npm y los archivos de elm.
+
+* Página de solarpaq.com
+Es un *SPA* hecho con ~elm-pages~ es público el repositorio, por si sirve les comparto la forma en que implanté y personalicé elm-pages.
+Pero por [[https://www.notion.so/Tailwind-UI-License-644418bb34ad4fa29aac9b82e956a867][licencia]], estoy usando https://tailwindui.com/components y no permite copiar el diseño visula de la aplicación.
+
+This is an *SPA* made with [[https://github.com/dillonkearns/elm-pages/][elm-pages]] with [[https://elm-lang.org/][elm programming language]]. Shared as a public repository if you what to check out how I used elm-pages for my needs. But regarding the visual layout of the web pages, it is done with https://tailwindui.com/components and it's  [[https://www.notion.so/Tailwind-UI-License-644418bb34ad4fa29aac9b82e956a867][licence]] doesn't allow to be copied as a template for other to use in their site.
 

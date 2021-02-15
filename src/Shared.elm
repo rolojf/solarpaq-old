@@ -216,37 +216,6 @@ incrementView model =
         [ Html.text <| "Shared count: " ++ String.fromInt model.counter ]
 
 
-
--- navbarLinks stars currentPath =
---                    (navbarLinks stars currentPath)
-
-
-highlightableLink :
-    PagePath Pages.PathKey
-    -> Directory Pages.PathKey Directory.WithIndex
-    -> String
-    -> Html msg
-highlightableLink currentPath linkDirectory displayName =
-    let
-        isHighlighted =
-            currentPath |> Directory.includes linkDirectory
-    in
-    Html.a
-        [ Attr.href
-            (linkDirectory
-                |> Directory.indexPath
-                |> PagePath.toString
-            )
-        , class <|
-            if isHighlighted then
-                "highlited"
-
-            else
-                "nada"
-        ]
-        [ Html.text displayName ]
-
-
 myNav :
     Model
     ->
@@ -324,7 +293,8 @@ myHiddenBlock modelo =
         [ class "hidden md:block" ]
         [ div
             [ class "ml-4 flex items-center md:ml-6" ]
-            [ div             -- Profile dropdown --
+            [ div
+                -- Profile dropdown --
                 [ class "ml-3 relative" ]
                 [ div
                     []
@@ -477,32 +447,6 @@ ligasChulas esMovil page menus =
                 algoDelMenu
         )
         menus
-
-
-
-{-
-       [ Html.a
-       [ Attr.href "#"
-       , class <| "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md font-medium" ++ extraClases
-       ]
-       [ Html.text "Team" ]
-   , Html.a
-       [ Attr.href "#"
-       , class <| "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md font-medium" ++ extraClases
-       ]
-       [ Html.text "Projects" ]
-   , Html.a
-       [ Attr.href "#"
-       , class <| "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md font-medium" ++ extraClases
-       ]
-       [ Html.text "Calendar" ]
-   , Html.a
-       [ Attr.href "#"
-       , class <| "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md font-medium" ++ extraClases
-       ]
-       [ Html.text "Reports" ]
-   ]
--}
 
 
 menuItems : String -> List (Html msg)
