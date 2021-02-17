@@ -1,5 +1,6 @@
 module Shared exposing (Model, Msg(..), PageView, RenderedBody, SharedMsg(..), StaticData, template)
 
+import Correo exposing (Correo)
 import Html exposing (Html, div)
 import Html.Attributes as Attr exposing (class)
 import Html.Attributes.Aria as Aria
@@ -17,6 +18,11 @@ import Svg exposing (path, svg)
 import Svg.Attributes
 import TemplateMetadata
 import TemplateType exposing (TemplateType)
+
+
+
+-- import Monocle.Compose
+-- import Monocle.Lens exposing (Lens)
 
 
 type alias SharedTemplate templateDemuxMsg msg1 msg2 =
@@ -85,6 +91,18 @@ type Msg
     | ToggleProfileMenu
     | Increment
     | SharedMsg SharedMsg
+    | LlenoCampo CampoFormulario String
+
+
+type CampoFormulario
+    = Nombre
+    | ComoSupo
+    | Correo
+    | Apellido
+    | Telefono
+    | Respondio
+    | Comentario
+    | Enviado
 
 
 
@@ -99,10 +117,31 @@ type SharedMsg
     = IncrementFromChild
 
 
+type UsuarioStatus
+    = Desconocido
+    | Rechazado
+    | Conocido
+    | DiceQueRegresa
+
+
+type alias DatosForma =
+    { nombre : Maybe String
+    , comoSupo : String
+    , correo : Correo
+    , comentario : String
+    , telefono : String
+    , apellido : String
+    , respondio : Int
+    , listo : Bool
+    }
+
+
 type alias Model =
     { showMobileMenu : Bool
     , counter : Int
     , showProfileMenu : Bool
+    , usuarioStatus : UsuarioStatus
+    , datosForma : DatosForma
     }
 
 
@@ -127,6 +166,17 @@ init maybePagePath =
     ( { showMobileMenu = False
       , counter = 0
       , showProfileMenu = False
+      , usuarioStatus = Desconocido
+      , datosForma =
+            { nombre = Nothing
+            , comoSupo = ""
+            , correo = Correo.setCorreo ""
+            , comentario = ""
+            , telefono = ""
+            , apellido = ""
+            , respondio = 0
+            , listo = False
+            }
       }
     , Cmd.none
     )
@@ -151,6 +201,132 @@ update msg model =
             case globalMsg of
                 IncrementFromChild ->
                     ( { model | counter = model.counter + 1 }, Cmd.none )
+
+        LlenoCampo queCampo conQue ->
+            case queCampo of
+                Nombre ->
+                    let
+                        dForma =
+                            model.datosForma
+
+                        cChar =
+                            String.length conQue
+
+                        cCampo =
+                            { dForma
+                                | nombre =
+                                    if
+                                        cChar
+                                            > 1
+                                            && cChar
+                                            < 15
+                                    then
+                                        Just conQue
+
+                                    else
+                                        Nothing
+                            }
+                    in
+                    ( { model | datosForma = cCampo }, Cmd.none )
+
+                ComoSupo ->
+                    let
+                        dForma =
+                            model.datosForma
+
+                        cCampo =
+                            { dForma | comoSupo = conQue }
+                    in
+                    ( { model | datosForma = cCampo }, Cmd.none )
+
+                Correo ->
+                    let
+                        dForma =
+                            model.datosForma
+
+                        cCampo =
+                            { dForma | correo = Correo.setCorreo conQue }
+                    in
+                    ( { model | datosForma = cCampo }, Cmd.none )
+
+                Apellido ->
+                    let
+                        dForma =
+                            model.datosForma
+
+                        cCampo =
+                            { dForma | apellido = conQue }
+                    in
+                    ( { model | datosForma = cCampo }, Cmd.none )
+
+                Telefono ->
+                    let
+                        dForma =
+                            model.datosForma
+
+                        entered =
+                            String.right 1 conQue
+
+                        conQue1 =
+                              if String.contains entered "01234567890 _-.+" then
+                                entered
+
+                            else
+                                ""
+                        cCampo =
+                            { dForma | telefono = String.dropRight 1 conQue ++ conQue1 }
+                    in
+                    ( { model | datosForma = cCampo }, Cmd.none )
+
+                Respondio ->
+                    let
+                        dForma =
+                            model.datosForma
+
+                        cCampo =
+                            { dForma
+                                | respondio =
+                                    case String.toInt conQue of
+                                        Just a ->
+                                            a
+
+                                        Nothing ->
+                                            0
+                            }
+                    in
+                    ( { model | datosForma = cCampo }, Cmd.none )
+
+                Comentario ->
+                    let
+                        dForma =
+                            model.datosForma
+
+                        cCampo =
+                            { dForma | comentario = conQue }
+                    in
+                    ( { model | datosForma = cCampo }, Cmd.none )
+
+                Enviado ->
+                    let
+                        dForma =
+                            model.datosForma
+
+                        cCampo =
+                            { dForma
+                                | listo =
+                                    if
+                                        dForma.correo
+                                            == Correo.CInvalido
+                                            || dForma.nombre
+                                            == Nothing
+                                    then
+                                        False
+
+                                    else
+                                        True
+                            }
+                    in
+                    ( { model | datosForma = cCampo }, Cmd.none )
 
 
 subscriptions : TemplateType -> PagePath Pages.PathKey -> Model -> Sub Msg
@@ -204,7 +380,10 @@ view stars page model toMsg pageView =
                     )
                 , div
                     []
-                    [ viewFormulario
+                    [ viewFormulario model |> Html.map toMsg
+                    , Html.text <| Debug.toString model.datosForma
+                    , Html.text <| String.repeat 60 "- "
+                    , Html.text <| Debug.toString model.usuarioStatus
 
                     -- , viewChallenge model
                     ]
@@ -609,6 +788,7 @@ viewCampoNombre =
                 , Attr.id "first_name"
                 , Attr.autocomplete True -- "given-name"
                 , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                , Html.Events.onInput (LlenoCampo Nombre)
                 ]
                 []
             ]
@@ -630,6 +810,7 @@ viewCampoApellido =
                 , Attr.id "last_name"
                 , Attr.autocomplete True -- "family-name"
                 , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                , Html.Events.onInput (LlenoCampo Apellido)
                 ]
                 []
             ]
@@ -652,13 +833,14 @@ viewCampoCorreo =
                 , Attr.type_ "email"
                 , Attr.autocomplete True --"email"
                 , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                , Html.Events.onInput (LlenoCampo Correo)
                 ]
                 []
             ]
         ]
 
 
-viewCampoTelefono =
+viewCampoTelefono model =
     div
         [ class "sm:col-span-2" ]
         [ div
@@ -680,9 +862,11 @@ viewCampoTelefono =
                 [ Attr.type_ "text"
                 , Attr.name "phone"
                 , Attr.id "phone"
+                , Attr.value model.datosForma.telefono
                 , Attr.autocomplete True -- "tel"
                 , Aria.ariaDescribedby "phone_description"
                 , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                , Html.Events.onInput (LlenoCampo Telefono)
                 ]
                 []
             ]
@@ -713,6 +897,7 @@ viewCampoComment =
                 , Aria.ariaDescribedby "how_can_we_help_description"
                 , Attr.rows 4
                 , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                , Html.Events.onInput (LlenoCampo Comentario)
                 ]
                 []
             ]
@@ -734,6 +919,7 @@ viewComoSupoDeNos =
                 , Attr.name "how_did_you_hear_about_us"
                 , Attr.id "how_did_you_hear_about_us"
                 , class "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                , Html.Events.onInput (LlenoCampo ComoSupo)
                 ]
                 []
             ]
@@ -746,12 +932,14 @@ viewBotonSubmit =
         [ Html.button
             [ Attr.type_ "submit"
             , class "inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            , Html.Events.onInput (LlenoCampo Enviado)
             ]
             [ Html.text "Submit" ]
         ]
 
 
-viewFormulario =
+viewFormulario : Model -> Html Msg
+viewFormulario model =
     div
         [ class "max-w-md mx-auto sm:max-w-lg lg:mx-0" ]
         [ Html.h2
@@ -768,7 +956,7 @@ viewFormulario =
             [ viewCampoNombre
             , viewCampoApellido
             , viewCampoCorreo
-            , viewCampoTelefono
+            , viewCampoTelefono model
             , viewCampoComment
             , viewComoSupoDeNos
             , viewBotonSubmit
