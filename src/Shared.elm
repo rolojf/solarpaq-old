@@ -1,5 +1,6 @@
 module Shared exposing (Model, Msg(..), PageView, RenderedBody, SharedMsg(..), StaticData, template)
 
+import Browser.Dom as Dom
 import Html exposing (Html, div)
 import Html.Attributes as Attr exposing (class)
 import Html.Attributes.Aria as Aria
@@ -105,11 +106,7 @@ type CampoFormulario
     | Comentario
     | Enviado
     | IntentaDeNuez
-
-
-
--- | Contesto String
-
+    | ResultaDelFocus
 
 type alias StaticData =
     Int
@@ -287,7 +284,7 @@ update msg model =
                             }
                     in
                     ( { model | datosForma = cCampo }
-                    , Task.perform (\_ -> LlenoCampo IntentaDeNuez "") <| Process.sleep 750
+                    , Task.perform (\_ -> LlenoCampo IntentaDeNuez "") <| Process.sleep 600
                     )
 
                 Comentario ->
@@ -308,7 +305,10 @@ update msg model =
                         cCampo =
                             { dForma | listo = True }
                     in
-                    ( { model | datosForma = cCampo }, Cmd.none )
+                        ( { model | datosForma = cCampo }
+                        , Dom.focus "valor-challenge"
+                              |> Task.attempt (\_ -> LlenoCampo ResultaDelFocus "")
+                        )
 
                 IntentaDeNuez ->
                     let
@@ -354,6 +354,8 @@ update msg model =
                     , Cmd.none
                     )
 
+                ResultaDelFocus ->
+                    ( model, Cmd.none )
 
 subscriptions : TemplateType -> PagePath Pages.PathKey -> Model -> Sub Msg
 subscriptions _ _ _ =
@@ -424,7 +426,7 @@ view stars page model toMsg pageView =
                             Html.text "Ya veremos..."
 
                         ( False, _ ) ->
-                            Html.text <| String.repeat 40 "--  "
+                            Html.text ""
                     ]
                 ]
             , viewFooter
@@ -605,26 +607,47 @@ viewFormulario model =
                 ]
     in
     div
-        [ class "max-w-md mx-auto sm:max-w-lg lg:mx-0" ]
-        [ Html.h2
-            [ class "text-3xl font-extrabold tracking-tight sm:text-4xl" ]
-            [ Html.text "Let's work together" ]
-        , Html.p
-            [ class "mt-4 text-lg text-gray-500 sm:mt-3" ]
-            [ Html.text "We’d love to hear from you! Send us a message using the form opposite, or email us. We’d love to hear from you! Send us a message using the form opposite, or email us." ]
-        , Html.form
-            [ Attr.action "#"
-            , Attr.method "POST"
-            , Html.Events.onSubmit (LlenoCampo Enviado "")
-            , class "mt-9 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8"
+        [ class "relative bg-white" ]
+        [ div
+            [ class "lg:absolute lg:inset-0" ]
+            [ div
+                [ class "lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2" ]
+                [ Html.img
+                    [ class "h-56 w-full object-cover lg:absolute lg:h-full"
+                    , Attr.src "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-1.2.1&ixqx=g09zpRVLoT&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1567&q=80"
+                    , Attr.alt ""
+                    ]
+                    []
+                ]
             ]
-            [ viewCampoNombre
-            , viewCampoApellido
-            , viewCampoCorreo
-            , viewCampoTelefono
-            , viewCampoComment
-            , viewComoSupoDeNos
-            , viewBotonSubmit
+        , div
+            [ class "relative pt-12 pb-16 px-4 sm:pt-16 sm:px-6 lg:px-8 lg:max-w-7xl lg:mx-auto lg:grid lg:grid-cols-2" ]
+            [ div
+                [ class "lg:pr-8" ]
+                [ div
+                    [ class "max-w-md mx-auto sm:max-w-lg lg:mx-0" ]
+                    [ Html.h2
+                        [ class "text-3xl font-extrabold tracking-tight sm:text-4xl" ]
+                        [ Html.text "Let's work together" ]
+                    , Html.p
+                        [ class "mt-4 text-lg text-gray-500 sm:mt-3" ]
+                        [ Html.text "We’d love to hear from you! Send us a message using the form opposite, or email us. We’d love to hear from you! Send us a message using the form opposite, or email us." ]
+                    , Html.form
+                        [ Attr.action "#"
+                        , Attr.method "POST"
+                        , Html.Events.onSubmit (LlenoCampo Enviado "")
+                        , class "mt-9 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8"
+                        ]
+                        [ viewCampoNombre
+                        , viewCampoApellido
+                        , viewCampoCorreo
+                        , viewCampoTelefono
+                        , viewCampoComment
+                        , viewComoSupoDeNos
+                        , viewBotonSubmit
+                        ]
+                    ]
+                ]
             ]
         ]
 
@@ -944,7 +967,7 @@ viewChallenge model =
                         [ Html.text "número" ]
                     , Html.input
                         [ class "mm-campo text-center"
-                        , Attr.id "valor"
+                        , Attr.id "valor-challenge"
                         , if model.datosForma.nuevoIntento then
                             Attr.placeholder "?"
 
@@ -998,7 +1021,7 @@ viewFooter =
                 [ class "px-5 py-2" ]
                 [ Html.a
                     [ Attr.href liga
-                    , class "text-base text-gray-500 hover:text-gray-900"
+                    , class "text-base text-gray-600 hover:text-black"
                     ]
                     [ Html.text texto ]
                 ]
@@ -1009,6 +1032,7 @@ viewFooter =
                 [ Svg.Attributes.class "h-6 w-6"
                 , Svg.Attributes.fill "currentColor"
                 , Svg.Attributes.viewBox "0 0 24 24"
+
                 -- aria-hidden="true"
                 ]
                 [ Svg.path
@@ -1055,33 +1079,38 @@ viewFooter =
                 ]
     in
     Html.footer
-        [ class "bg-white" ]
+        []
         [ div
-            [ class "max-w-7xl mx-auto py-12 px-4 overflow-hidden sm:px-6 lg:px-8" ]
-            [ Html.nav
-                [ class "-mx-5 -my-2 flex flex-wrap justify-center"
-                , Aria.ariaLabel "Footer"
+            []
+            [ div
+                [ class "bg-white py-4" ]
+                []
+            , div
+                [ class "bg-gray-200" ]
+                [ div
+                    [ class "max-w-7xl mx-auto py-12 px-4 overflow-hidden sm:px-6 lg:px-8" ]
+                    [ Html.nav
+                        [ class "-mx-5 -my-2 flex flex-wrap justify-center"
+                        , Aria.ariaLabel "Footer"
+                        ]
+                        [ ligaAlPie "#" "About"
+                        , ligaAlPie "#" "Blog"
+                        , ligaAlPie "#" "Jobs"
+                        , ligaAlPie "#" "Press"
+                        , ligaAlPie "#" "Accesibility"
+                        , ligaAlPie "#" "Partners"
+                        ]
+                    , div
+                        [ class "mt-8 flex justify-center space-x-6" ]
+                        [ ligaIcono "facebook.com" "facebook" Facebook
+                        , ligaIcono "instagram.com" "Instagram" Instagram
+                        , ligaIcono "twitter.com" "Twitter" Twitter
+                        , ligaIcono "github.com" "GitHub" Github
+                        ]
+                    , Html.p
+                        [ class "mt-8 text-center text-base text-gray-500" ]
+                        [ Html.text "&copy; 2020 Workflow, Inc. All rights reserved." ]
+                    ]
                 ]
-                [ ligaAlPie "#" "About"
-                , ligaAlPie "#" "Blog"
-                , ligaAlPie "#" "Jobs"
-                , ligaAlPie "#" "Press"
-                , ligaAlPie "#" "Accesibility"
-                , ligaAlPie "#" "Partners"
-                ]
-           , div
-                [ class "mt-8 flex justify-center space-x-6" ]
-                [ ligaIcono "facebook.com" "facebook" Facebook
-                , ligaIcono "instagram.com" "Instagram" Instagram
-                , ligaIcono "twitter.com" "Twitter" Twitter
-                , ligaIcono "github.com" "GitHub" Github
-                ]
-           , Html.p
-                [ class "mt-8 text-center text-base text-gray-400" ]
-                [ Html.text "&copy; 2020 Workflow, Inc. All rights reserved." ]
-           ]
+            ]
         ]
-
-
-
--- footer

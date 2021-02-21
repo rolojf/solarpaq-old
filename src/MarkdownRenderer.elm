@@ -1,7 +1,6 @@
 module MarkdownRenderer exposing (TableOfContents, view)
 
 import Dotted
-import Ellie
 import Html exposing (Html, div)
 import Html.Attributes as Attr exposing (class)
 import Json.Encode as Encode exposing (Value)
