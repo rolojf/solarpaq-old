@@ -11,7 +11,7 @@ type alias Liga =
 
 
 type alias BlogIndex =
-    {  menu : List Liga }
+    { menu : List Liga }
 
 
 type alias BlogPost =
@@ -25,6 +25,12 @@ type alias BlogPost =
 
 
 type alias Page =
+    { title : String
+    , menu : List Liga
+    }
+
+
+type alias Home =
     { title : String
     , menu : List Liga
     }

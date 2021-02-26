@@ -1,4 +1,4 @@
-module Shared exposing (Model, Msg(..), PageView, RenderedBody, SharedMsg(..), StaticData, template)
+module Shared exposing (Model, Msg(..), PageView, RenderedBody, SharedMsg(..), StaticData, template, UsuarioStatus(..))
 
 import Browser.Dom as Dom
 import Html exposing (Html, div)
@@ -20,11 +20,6 @@ import Svg.Attributes
 import Task
 import TemplateMetadata
 import TemplateType exposing (TemplateType)
-
-
-
--- import Monocle.Compose
--- import Monocle.Lens exposing (Lens)
 
 
 type alias SharedTemplate templateDemuxMsg msg1 msg2 =
@@ -93,27 +88,10 @@ type Msg
     | ToggleProfileMenu
     | Increment
     | SharedMsg SharedMsg
-    | LlenoCampo CampoFormulario String
 
-
-type CampoFormulario
-    = Nombre
-    | ComoSupo
-    | Correo
-    | Apellido
-    | Telefono
-    | Respondio
-    | Comentario
-    | Enviado
-    | IntentaDeNuez
-    | ResultaDelFocus
 
 type alias StaticData =
     Int
-
-
-type SharedMsg
-    = IncrementFromChild
 
 
 type UsuarioStatus
@@ -123,26 +101,16 @@ type UsuarioStatus
     | DiceQueRegresa
 
 
-type alias DatosForma =
-    { nombre : String
-    , comoSupo : String
-    , correo : String
-    , comentario : String
-    , telefono : String
-    , apellido : String
-    , respondioBien : Bool
-    , listo : Bool
-    , nuevoIntento : Bool
-    }
+type SharedMsg
+    = IncrementFromChild
+    | User UsuarioStatus
 
 
 type alias Model =
     { showMobileMenu : Bool
     , counter : Int
-    , intentos : Int
     , showProfileMenu : Bool
-    , usuarioStatus : UsuarioStatus
-    , datosForma : DatosForma
+    , usuario : UsuarioStatus
     }
 
 
@@ -166,20 +134,8 @@ init :
 init maybePagePath =
     ( { showMobileMenu = False
       , counter = 0
-      , intentos = 0
       , showProfileMenu = False
-      , usuarioStatus = Desconocido
-      , datosForma =
-            { nombre = ""
-            , comoSupo = ""
-            , correo = ""
-            , comentario = ""
-            , telefono = ""
-            , apellido = ""
-            , respondioBien = False
-            , listo = False
-            , nuevoIntento = True
-            }
+      , usuario = Desconocido
       }
     , Cmd.none
     )
@@ -205,157 +161,20 @@ update msg model =
                 IncrementFromChild ->
                     ( { model | counter = model.counter + 1 }, Cmd.none )
 
-        LlenoCampo queCampo conQue ->
-            case queCampo of
-                Nombre ->
-                    let
-                        dForma =
-                            model.datosForma
+                User status ->
+                    case status of
+                        Desconocido ->
+                            ( { model | usuario = status }, Cmd.none )
 
-                        cCampo =
-                            { dForma | nombre = conQue }
-                    in
-                    ( { model | datosForma = cCampo }, Cmd.none )
+                        Rechazado ->
+                            ( { model | usuario = status }, Cmd.none )
 
-                ComoSupo ->
-                    let
-                        dForma =
-                            model.datosForma
+                        Conocido ->
+                            ( { model | usuario = status }, Cmd.none )
 
-                        cCampo =
-                            { dForma | comoSupo = conQue }
-                    in
-                    ( { model | datosForma = cCampo }, Cmd.none )
+                        DiceQueRegresa ->
+                            ( { model | usuario = status }, Cmd.none )
 
-                Correo ->
-                    let
-                        dForma =
-                            model.datosForma
-
-                        cCampo =
-                            { dForma | correo = conQue }
-                    in
-                    ( { model | datosForma = cCampo }, Cmd.none )
-
-                Apellido ->
-                    let
-                        dForma =
-                            model.datosForma
-
-                        cCampo =
-                            { dForma | apellido = conQue }
-                    in
-                    ( { model | datosForma = cCampo }, Cmd.none )
-
-                Telefono ->
-                    let
-                        dForma =
-                            model.datosForma
-
-                        entered =
-                            String.right 1 conQue
-
-                        conQue1 =
-                            if String.contains entered "01234567890 _-.+" then
-                                entered
-
-                            else
-                                ""
-
-                        cCampo =
-                            { dForma | telefono = String.dropRight 1 conQue ++ conQue1 }
-                    in
-                    ( { model | datosForma = cCampo }, Cmd.none )
-
-                Respondio ->
-                    let
-                        dForma =
-                            model.datosForma
-
-                        cCampo =
-                            { dForma
-                                | respondioBien =
-                                    if conQue == "4" then
-                                        True
-
-                                    else
-                                        False
-                                , nuevoIntento = False
-                            }
-                    in
-                    ( { model | datosForma = cCampo }
-                    , Task.perform (\_ -> LlenoCampo IntentaDeNuez "") <| Process.sleep 600
-                    )
-
-                Comentario ->
-                    let
-                        dForma =
-                            model.datosForma
-
-                        cCampo =
-                            { dForma | comentario = conQue }
-                    in
-                    ( { model | datosForma = cCampo }, Cmd.none )
-
-                Enviado ->
-                    let
-                        dForma =
-                            model.datosForma
-
-                        cCampo =
-                            { dForma | listo = True }
-                    in
-                        ( { model | datosForma = cCampo }
-                        , Dom.focus "valor-challenge"
-                              |> Task.attempt (\_ -> LlenoCampo ResultaDelFocus "")
-                        )
-
-                IntentaDeNuez ->
-                    let
-                        dForma =
-                            model.datosForma
-
-                        cCampo =
-                            { dForma | nuevoIntento = True }
-                    in
-                    ( { model
-                        | intentos = model.intentos + 1
-                        , datosForma = cCampo
-                        , usuarioStatus =
-                            case ( model.datosForma.respondioBien, model.usuarioStatus ) of
-                                ( False, Desconocido ) ->
-                                    if model.intentos >= 3 then
-                                        Rechazado
-
-                                    else
-                                        Desconocido
-
-                                ( False, Conocido ) ->
-                                    Conocido
-
-                                ( False, DiceQueRegresa ) ->
-                                    DiceQueRegresa
-
-                                ( False, Rechazado ) ->
-                                    Rechazado
-
-                                ( True, Desconocido ) ->
-                                    Conocido
-
-                                ( True, Rechazado ) ->
-                                    Rechazado
-
-                                ( True, Conocido ) ->
-                                    Conocido
-
-                                ( True, DiceQueRegresa ) ->
-                                    DiceQueRegresa
-                      }
-                    , Cmd.none
-                    )
-
-                ResultaDelFocus ->
-                    ( model, Cmd.none )
 
 subscriptions : TemplateType -> PagePath Pages.PathKey -> Model -> Sub Msg
 subscriptions _ _ _ =
@@ -406,28 +225,6 @@ view stars page model toMsg pageView =
                      )
                         :: pageView.body
                     )
-                , div
-                    [ class "max-w-7xl mx-auto sm:px-6 lg:px-8" ]
-                    [ viewFormulario model |> Html.map toMsg
-
-                    -- , Html.text <| Debug.toString model.datosForma
-                    --, Html.text <| Debug.toString model.usuarioStatus
-                    , case ( model.datosForma.listo, model.usuarioStatus ) of
-                        ( True, Desconocido ) ->
-                            viewChallenge model |> Html.map toMsg
-
-                        ( True, Rechazado ) ->
-                            Html.text "Shame on you!"
-
-                        ( True, Conocido ) ->
-                            Html.text "Wellcome!"
-
-                        ( True, DiceQueRegresa ) ->
-                            Html.text "Ya veremos..."
-
-                        ( False, _ ) ->
-                            Html.text ""
-                    ]
                 ]
             , viewFooter
             ]
@@ -438,218 +235,6 @@ view stars page model toMsg pageView =
 incrementView model =
     div [ Html.Events.onClick Increment ]
         [ Html.text <| "Shared count: " ++ String.fromInt model.counter ]
-
-
-viewFormulario : Model -> Html Msg
-viewFormulario model =
-    let
-        viewCampoNombre =
-            div
-                []
-                [ Html.label
-                    [ Attr.for "first_name"
-                    , class "block text-sm font-medium text-gray-700"
-                    ]
-                    [ Html.text "First name" ]
-                , div
-                    [ class "mt-1" ]
-                    [ Html.input
-                        [ Attr.type_ "text"
-                        , Attr.name "first_name"
-                        , Attr.id "first_name"
-                        , Attr.required True
-                        , Attr.minlength 2
-                        , Attr.maxlength 15
-                        , Attr.autocomplete True -- "given-name"
-                        , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                        , Html.Events.onInput (LlenoCampo Nombre)
-                        ]
-                        []
-                    ]
-                ]
-
-        viewCampoApellido =
-            div []
-                [ Html.label
-                    [ Attr.for "last_name"
-                    , class "block text-sm font-medium text-gray-700"
-                    ]
-                    [ Html.text "Last name" ]
-                , div
-                    [ class "mt-1" ]
-                    [ Html.input
-                        [ Attr.type_ "text"
-                        , Attr.name "last_name"
-                        , Attr.id "last_name"
-                        , Attr.autocomplete True -- "family-name"
-                        , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                        , Html.Events.onInput (LlenoCampo Apellido)
-                        ]
-                        []
-                    ]
-                ]
-
-        viewCampoCorreo =
-            div
-                [ class "sm:col-span-2" ]
-                [ Html.label
-                    [ Attr.for "email"
-                    , class "block text-sm font-medium text-gray-700"
-                    ]
-                    [ Html.text "Email" ]
-                , div
-                    [ class "mt-1" ]
-                    [ Html.input
-                        [ Attr.id "email"
-                        , Attr.name "email"
-                        , Attr.type_ "email"
-                        , Attr.autocomplete True --"email"
-                        , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                        , Html.Events.onInput (LlenoCampo Correo)
-                        ]
-                        []
-                    ]
-                ]
-
-        viewCampoTelefono =
-            div
-                [ class "sm:col-span-2" ]
-                [ div
-                    [ class "flex justify-between" ]
-                    [ Html.label
-                        [ Attr.for "phone"
-                        , class "block text-sm font-medium text-gray-700"
-                        ]
-                        [ Html.text "Phone" ]
-                    , Html.span
-                        [ Attr.id "phone_description"
-                        , class "text-sm text-gray-500"
-                        ]
-                        [ Html.text "Optional" ]
-                    ]
-                , div
-                    [ class "mt-1" ]
-                    [ Html.input
-                        [ Attr.type_ "text"
-                        , Attr.name "phone"
-                        , Attr.id "phone"
-                        , Attr.minlength 8
-                        , Attr.maxlength 15
-                        , Attr.value model.datosForma.telefono
-                        , Attr.autocomplete True -- "tel"
-                        , Aria.ariaDescribedby "phone_description"
-                        , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                        , Html.Events.onInput (LlenoCampo Telefono)
-                        ]
-                        []
-                    ]
-                ]
-
-        viewCampoComment =
-            div
-                [ class "sm:col-span-2" ]
-                [ div
-                    [ class "flex justify-between" ]
-                    [ Html.label
-                        [ Attr.for "how_can_we_help"
-                        , class "block text-sm font-medium text-gray-700"
-                        ]
-                        [ Html.text "How can we help you?" ]
-                    , Html.span
-                        [ Attr.id "how_can_we_help_description"
-                        , class "text-sm text-gray-500"
-                        ]
-                        [ Html.text ">Max. 500 characters" ]
-                    ]
-                , div
-                    [ class "mt-1" ]
-                    [ Html.textarea
-                        [ Attr.id "how_can_we_help"
-                        , Attr.name "how_can_we_help"
-                        , Aria.ariaDescribedby "how_can_we_help_description"
-                        , Attr.rows 4
-                        , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                        , Html.Events.onInput (LlenoCampo Comentario)
-                        ]
-                        []
-                    ]
-                ]
-
-        viewComoSupoDeNos =
-            div
-                [ class "sm:col-span-2" ]
-                [ Html.label
-                    [ Attr.for "how_did_you_hear_about_us"
-                    , class "block text-sm font-medium text-gray-700"
-                    ]
-                    [ Html.text "How did you hear about us?" ]
-                , div
-                    [ class "mt-1" ]
-                    [ Html.input
-                        [ Attr.type_ "text"
-                        , Attr.name "how_did_you_hear_about_us"
-                        , Attr.id "how_did_you_hear_about_us"
-                        , class "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                        , Html.Events.onInput (LlenoCampo ComoSupo)
-                        ]
-                        []
-                    ]
-                ]
-
-        viewBotonSubmit =
-            div
-                [ class "text-right sm:col-span-2" ]
-                [ Html.button
-                    [ Attr.type_ "submit"
-                    , class "inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    ]
-                    [ Html.text "Submit" ]
-                ]
-    in
-    div
-        [ class "relative bg-white" ]
-        [ div
-            [ class "lg:absolute lg:inset-0" ]
-            [ div
-                [ class "lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2" ]
-                [ Html.img
-                    [ class "h-56 w-full object-cover lg:absolute lg:h-full"
-                    , Attr.src "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-1.2.1&ixqx=g09zpRVLoT&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1567&q=80"
-                    , Attr.alt ""
-                    ]
-                    []
-                ]
-            ]
-        , div
-            [ class "relative pt-12 pb-16 px-4 sm:pt-16 sm:px-6 lg:px-8 lg:max-w-7xl lg:mx-auto lg:grid lg:grid-cols-2" ]
-            [ div
-                [ class "lg:pr-8" ]
-                [ div
-                    [ class "max-w-md mx-auto sm:max-w-lg lg:mx-0" ]
-                    [ Html.h2
-                        [ class "text-3xl font-extrabold tracking-tight sm:text-4xl" ]
-                        [ Html.text "Let's work together" ]
-                    , Html.p
-                        [ class "mt-4 text-lg text-gray-500 sm:mt-3" ]
-                        [ Html.text "We’d love to hear from you! Send us a message using the form opposite, or email us. We’d love to hear from you! Send us a message using the form opposite, or email us." ]
-                    , Html.form
-                        [ Attr.action "#"
-                        , Attr.method "POST"
-                        , Html.Events.onSubmit (LlenoCampo Enviado "")
-                        , class "mt-9 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8"
-                        ]
-                        [ viewCampoNombre
-                        , viewCampoApellido
-                        , viewCampoCorreo
-                        , viewCampoTelefono
-                        , viewCampoComment
-                        , viewComoSupoDeNos
-                        , viewBotonSubmit
-                        ]
-                    ]
-                ]
-            ]
-        ]
 
 
 myNav :
@@ -675,6 +260,9 @@ myNav modelo page =
 
                 TemplateType.SelComp1 { menu } ->
                     menu
+
+                TemplateType.Home { menu } ->
+                                    menu
 
         myLogoAndLinks : Html msg
         myLogoAndLinks =
@@ -939,79 +527,6 @@ myNav modelo page =
         ]
 
 
-viewChallenge : Model -> Html Msg
-viewChallenge model =
-    div [ class "la-base-modal" ]
-        [ div
-            [ class "mm-fondo" ]
-            [ Html.h3
-                [ class "mm-titulo" ]
-                [ Html.text "Validación Rápida" ]
-            , Html.p
-                [ class "mm-explic" ]
-                [ Html.text "Contesta lo siguiente para validar que eres humano y no un bot" ]
-            , div
-                [ class "mm-fondo-reto" ]
-                [ Html.p
-                    [ class "mm-reto" ]
-                    [ Html.text "Resuleve la siguiente ecuación: " ]
-                , div
-                    [ class "mm-acomodo-ecuacion" ]
-                    [ Html.p
-                        []
-                        [ Html.text "7 + " ]
-                    , Html.label
-                        [ class "sr-only"
-                        , Attr.for "valor"
-                        ]
-                        [ Html.text "número" ]
-                    , Html.input
-                        [ class "mm-campo text-center"
-                        , Attr.id "valor-challenge"
-                        , if model.datosForma.nuevoIntento then
-                            Attr.placeholder "?"
-
-                          else
-                            Attr.value ""
-                        , class "form-input"
-                        , Html.Events.onInput (LlenoCampo Respondio)
-                        ]
-                        []
-                    , Html.p
-                        []
-                        [ Html.text "= 11" ]
-                    ]
-                , if model.intentos >= 1 then
-                    Html.p
-                        [ class
-                            ("text-right mx-4 "
-                                ++ (if model.intentos == 1 then
-                                        "text-black"
-
-                                    else if model.intentos == 2 then
-                                        "text-red-500"
-
-                                    else
-                                        "text-red-500 font-bold italic"
-                                   )
-                            )
-                        ]
-                        [ Html.text "Intenta de nuevo!" ]
-
-                  else
-                    Html.p [] []
-                ]
-            ]
-        ]
-
-
-type SocialIcons
-    = Facebook
-    | Instagram
-    | Twitter
-    | Github
-
-
 viewFooter : Html msg
 viewFooter =
     let
@@ -1114,3 +629,10 @@ viewFooter =
                 ]
             ]
         ]
+
+
+type SocialIcons
+    = Facebook
+    | Instagram
+    | Twitter
+    | Github

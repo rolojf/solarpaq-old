@@ -3,6 +3,7 @@ module MetadataNew exposing (decoder)
 import Json.Decode as Decode exposing (Decoder)
 import Template.BlogIndex
 import Template.BlogPost
+import Template.Home
 import Template.Page
 import Template.SelComp1
 import TemplateType exposing (TemplateType)
@@ -29,6 +30,10 @@ decoder =
                     "selComp1" ->
                         Template.SelComp1.decoder
                             |> Decode.map TemplateType.SelComp1
+
+                    "home" ->
+                        Template.Home.decoder
+                            |> Decode.map TemplateType.Home
 
                     _ ->
                         Decode.fail <| "Pagina con \"tipo\" inesperado " ++ pageType

@@ -1,6 +1,6 @@
 ---
 title: elm-pages-starter - a simple blog starter
-type: page
+type: home
 ---
 
 This is an example repo to get you up and running with `elm-pages`.

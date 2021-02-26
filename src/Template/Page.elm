@@ -35,10 +35,10 @@ decoder =
         (Decode.succeed
             -- definir aquí como va el menú
             [ { direccion = "cuatro"
-              , queDice = "Four"
+              , queDice = "Four4"
               }
             , { direccion = "cinco"
-              , queDice = "Five"
+              , queDice = "Five5"
               }
             ]
         )
