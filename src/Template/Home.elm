@@ -259,14 +259,11 @@ view model sharedModel allMetadata staticPayload rendered =
         [ div [ class "columna cero" ]
             [ counterView sharedModel
             , Html.text "Aquí estaba el listado de la documentación"
-            , div [ class "primera columna" ]
-                [ Palette.heading 1 [ Html.text staticPayload.metadata.title ]
-                , div [ class "segunda columna" ]
-                    [ tocView staticPayload.path (Tuple.first rendered)
-                    , div
-                        [ class "tercer columna" ]
-                        (Tuple.second rendered |> List.map (Html.map never))
-                    ]
+            , div [ class "segunda columna" ]
+                [ tocView staticPayload.path (Tuple.first rendered)
+                , div
+                    [ class "tercer columna" ]
+                    (Tuple.second rendered |> List.map (Html.map never))
                 ]
             , div
                 [ class "max-w-7xl mx-auto sm:px-6 lg:px-8" ]

@@ -1,4 +1,4 @@
-module Shared exposing (Model, Msg(..), PageView, RenderedBody, SharedMsg(..), StaticData, template, UsuarioStatus(..))
+module Shared exposing (Model, Msg(..), PageView, RenderedBody, SharedMsg(..), StaticData, UsuarioStatus(..), template)
 
 import Browser.Dom as Dom
 import Html exposing (Html, div)
@@ -212,20 +212,17 @@ view stars page model toMsg pageView =
                 [ div
                     [ class "max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8" ]
                     [ Html.h1
-                        [ class "text-lg leading-6 font-semibold text-gray-900" ]
-                        [ Html.text "Dashboard" ]
+                        [ class "text-lg lg:text-2xl leading-6 font-bold text-gray-800" ]
+                        [ Html.text pageView.title ]
                     ]
                 ]
             , Html.main_
                 []
-                [ div
-                    [ class "max-w-7xl mx-auto sm:px-6 lg:px-8" ]
-                    ((incrementView model
-                        |> Html.map toMsg
-                     )
-                        :: pageView.body
-                    )
-                ]
+                ((incrementView model
+                    |> Html.map toMsg
+                 )
+                    :: pageView.body
+                )
             , viewFooter
             ]
     , title = pageView.title
@@ -262,7 +259,7 @@ myNav modelo page =
                     menu
 
                 TemplateType.Home { menu } ->
-                                    menu
+                    menu
 
         myLogoAndLinks : Html msg
         myLogoAndLinks =
