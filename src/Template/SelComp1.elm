@@ -1,5 +1,6 @@
 module Template.SelComp1 exposing (Model, Msg, decoder, template)
 
+import Browser.Dom as Dom
 import Head
 import Head.Seo as Seo
 import Html exposing (Html, div)
@@ -19,7 +20,6 @@ import Task
 import Template exposing (StaticPayload, TemplateWithState)
 import TemplateMetadata exposing (SelComp1)
 import TemplateType exposing (TemplateType)
-import Browser.Dom as Dom
 
 
 type alias StaticData =
@@ -88,16 +88,16 @@ update metadata msg model sharedModel =
 
         Toggle ->
             if model.open then
-                closeDropdown model
+                ( { model | open = False, focusedId = Nothing }, Cmd.none, Nothing )
 
             else
                 openDropdown model
 
         Close ->
-            closeDropdown model
+            ( { model | open = False, focusedId = Nothing }, Cmd.none, Nothing )
 
         SelectOption id ->
-            ( { model | selectedId = Just id }, Cmd.none, Nothing )
+            ( { model | selectedId = Just id, open = False }, Cmd.none, Nothing )
 
         KeyPress key ->
             if model.open then
@@ -176,6 +176,7 @@ view model sharedModel allMetadata staticPayload rendered =
                                 , class "sticky top-6 divide-y divide-gray-400"
                                 ]
                                 [ counterView sharedModel
+                                , Html.br [] []
                                 , Html.text "Mi Contenido en SideBar"
                                 ]
                             ]
@@ -345,7 +346,7 @@ allOptions =
 
 handleKeyWhenClosed : Model -> KeyPressed -> ( Model, Cmd Msg, Maybe Shared.SharedMsg )
 handleKeyWhenClosed model key =
-    if key == Up || key == Down then
+    if key == Up || key == Down || key == Enter || key == Space then
         openDropdown model
 
     else
@@ -356,10 +357,10 @@ handleKeyWhenOpen : Model -> KeyPressed -> ( Model, Cmd Msg, Maybe Shared.Shared
 handleKeyWhenOpen model key =
     case key of
         Enter ->
-            ( { model | selectedId = model.focusedId }, Cmd.none, Nothing )
+            ( { model | selectedId = model.focusedId, open = False }, Cmd.none, Nothing )
 
         Space ->
-            ( { model | selectedId = model.focusedId }, Cmd.none, Nothing)
+            ( { model | selectedId = model.focusedId, open = False }, Cmd.none, Nothing )
 
         Up ->
             navigateWithKey model (getPrevId model)
@@ -368,7 +369,7 @@ handleKeyWhenOpen model key =
             navigateWithKey model (getNextId model)
 
         Escape ->
-            closeDropdown model
+            ( { model | open = False, focusedId = Nothing }, Cmd.none, Nothing )
 
         Other ->
             ( model, Cmd.none, Nothing )
@@ -410,7 +411,7 @@ getNextId model =
             model.options |> List.map .id |> findNext id
 
 
-openDropdown : Model -> ( Model, Cmd Msg, Maybe Shared.SharedMsg)
+openDropdown : Model -> ( Model, Cmd Msg, Maybe Shared.SharedMsg )
 openDropdown model =
     let
         focusedId =
@@ -434,55 +435,73 @@ defaultFocused model =
             Just id
 
 
-closeDropdown : Model -> ( Model, Cmd Msg, Maybe Shared.SharedMsg )
-closeDropdown model =
-    ( { model | open = False, focusedId = Nothing }, Cmd.none, Nothing )
-
-
 
 -- VIEW DROPDOWN
 
+
+dropdownElementId =
+    "dropdown"
+
+
 viewDropdown : Model -> Html Msg
 viewDropdown model =
-    div []
+    div [ class "mt-4 w-96" ]
         [ Html.label
             [ Attr.id "listbox-label"
-             , class "block text-sm font-medium text-gray-700"
-             ]
-            [ Html.text "Asignado a:"]
+            , class "block text-sm font-medium text-gray-700"
+            ]
+            [ Html.text "Asignado a:" ]
         , div
             [ class "mt-1 relative"
+            , Attr.id dropdownElementId
             , Html.Events.preventDefaultOn "keydown" keyDecoder
-            , Html.Events.on "focusout" (onFocusOut "dropdown")
+            , Html.Events.on "focusout" (onFocusOut dropdownElementId)
             ]
             [ Html.button
                 [ class "relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 , Aria.ariaHasPopup "listbox"
-                , Aria.ariaExpanded <| if model.open then "true" else "false"
+                , Aria.ariaExpanded <|
+                    if model.open then
+                        "true"
+
+                    else
+                        "false"
                 , Aria.ariaLabelledby "listbox-label"
                 , Html.Events.onClick Toggle
                 ]
                 [ div
-                    [ class "flex item-center" ]
+                    [ class "flex items-center" ]
                     [ Html.span
                         [ Aria.ariaLabel "Online"
                         , class "bg-green-400 flex-shrink-0 inline-block h-2 w-2 rounded-full"
-                        ] []
+                        ]
+                        []
                     , Html.span
-                        [ class "ml-3 block truncate" ]
+                        [ class <|
+                            "ml-3 block truncate"
+                                ++ (case model.selectedId of
+                                        Just _ ->
+                                            " font-bold"
+
+                                        Nothing ->
+                                            ""
+                                   )
+                        ]
                         [ Html.text (getButtonText model "Select...") ]
-                   ]
+                    ]
                 ]
             , if model.open then
                 viewList model
-              else
-                 Html.span
-                            [ class "absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"
-                            , Aria.ariaHidden True ]
-                            [ heroIconSolidSelector ]
 
+              else
+                Html.span
+                    [ class "absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"
+                    , Aria.ariaHidden True
+                    ]
+                    [ heroIconSolidSelector ]
             ]
         ]
+
 
 heroIconSolidSelector =
     Svg.svg
@@ -491,25 +510,27 @@ heroIconSolidSelector =
         , Svg.Attributes.fill "currentColor"
         ]
         [ Svg.path
-             [ Svg.Attributes.fillRule "evenodd"
-             , Svg.Attributes.d "M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-             , Svg.Attributes.clipRule "evenodd"
-             ]
-             []
+            [ Svg.Attributes.fillRule "evenodd"
+            , Svg.Attributes.d "M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+            , Svg.Attributes.clipRule "evenodd"
+            ]
+            []
         ]
+
 
 heroIconSolidCheckMark =
     Svg.svg
         [ Svg.Attributes.class "h-5 w-5"
         , Svg.Attributes.viewBox "0 0 20 20"
         , Svg.Attributes.fill "currentColor"
-         ]
-         [ Svg.path
-             [ Svg.Attributes.fillRule "evenodd"
-             , Svg.Attributes.d "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-             , Svg.Attributes.clipRule "evenodd"
-              ] []
-         ]
+        ]
+        [ Svg.path
+            [ Svg.Attributes.fillRule "evenodd"
+            , Svg.Attributes.d "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+            , Svg.Attributes.clipRule "evenodd"
+            ]
+            []
+        ]
 
 
 viewList : Model -> Html Msg
@@ -523,7 +544,7 @@ viewList model =
             , Aria.ariaActiveDescendant "listbox-item-3"
             , Attr.tabindex -1
             ]
-            ( model.options
+            (model.options
                 |> List.map (viewOption model)
             )
         ]
@@ -536,45 +557,55 @@ viewOption model option =
             maybeEqual model.selectedId option.id
     in
     Html.li
-         [ Attr.attribute "role" "option"
-         , Attr.id option.id
-         , Attr.tabindex -1
-         , Html.Events.onClick (SelectOption option.id)
-         , class "text-gray-900 cursor-default select-none relative py-2 pl-3 pr-9"
-         , Aria.ariaSelected <| if isSelected then "true" else "false"
-         ]
-         [ div
-             [ class "flex item-center"]
-             [ Html.span
-                 [ class "bg-green-400 flex-shrink-0 inline-block h-2 w-2 rounded-full"
-                 , Aria.ariaHidden True
-                 ] []
-             , Html.span
-                 [ Attr.classList
-                       [ ( "ml-3 font-semibold block truncate", isSelected )
-                       , ( "ml-3 font-normal block truncate", maybeEqual model.focusedId option.id )
-                       ]
-                 ]
-                 [ Html.text option.label
-                 , Html.span
-                     [ class "sr-only"]
-                     [ Html.text "is Online"]
-                 ]
-            ]
-         , div
-             [ Aria.ariaHidden True
-             , class <| if isSelected then "" else "hidden"
-             ]
-             [ Html.span
-                 [ class "absolute inset-y-0 right-0 flex items-center pr-4"
-                 {-, Attr.classList
-                    [ ( "text-white", Highlited )
-                    , ( "text-indigo-600", Not Highlited )
-                    ]-}
-                 ]
-                 [ heroIconSolidCheckMark ]
-             ]
+        [ Attr.attribute "role" "option"
+        , Attr.id option.id
+        , Attr.tabindex -1
+        , Html.Events.onClick (SelectOption option.id)
+        , class "text-gray-900 cursor-default select-none relative py-2 pl-3 pr-9"
+        , Aria.ariaSelected <|
+            if isSelected then
+                "true"
+
+            else
+                "false"
         ]
+        [ div
+            [ class "flex items-center" ]
+            [ Html.span
+                [ class "bg-green-400 flex-shrink-0 inline-block h-2 w-2 rounded-full"
+                , Aria.ariaLabel "Online"
+                ]
+                []
+            , Html.span
+                [ class <|
+                    "ml-3 block truncate "
+                        ++ (if isSelected then
+                                "font-semibold"
+
+                            else if maybeEqual model.focusedId option.id then
+                                "text-white font-normal bg-indigo-600"
+
+                            else
+                                "text-gray-900 text-normal"
+                           )
+                ]
+                [ Html.text option.label
+                , Html.span
+                    [ class "sr-only" ]
+                    [ Html.text "is Online" ]
+                ]
+            ]
+        , if isSelected then
+            Html.span
+                [ class "absolute inset-y-0 right-0 flex items-center pr-4"
+                , Aria.ariaHidden True
+                ]
+                [ heroIconSolidCheckMark ]
+
+          else
+            div [] []
+        ]
+
 
 maybeEqual : Maybe String -> String -> Bool
 maybeEqual maybeId idToCompare =
@@ -600,8 +631,6 @@ byId id =
 
 
 -- MAIN
-
-
 -- EVENT DECODERS
 
 
