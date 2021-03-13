@@ -10,23 +10,20 @@ import Html.Attributes.Aria as Aria
 import Html.Events
 import Json.Decode as Decode
 import MarkdownRenderer
+import OptimizedDecoder as D
+import OptimizedDecoder.Pipeline as JDPipe
 import OptionRadio
 import Pages exposing (images)
 import Pages.PagePath as PagePath exposing (PagePath)
 import Pages.StaticHttp as StaticHttp
 import Platform.Cmd
+import Secrets
 import Shared
 import Site
-import Svg
-import Svg.Attributes
-import Task
 import Template exposing (StaticPayload, TemplateWithState)
 import TemplateMetadata exposing (SelComp1)
 import TemplateType exposing (TemplateType)
-
-
-type alias StaticData =
-    ()
+import Url
 
 
 type alias Model =
@@ -50,7 +47,10 @@ type Msg
 
 template : TemplateWithState SelComp1 StaticData Model Msg
 template =
-    Template.noStaticData { head = head }
+    Template.withStaticData
+        { head = head
+        , staticData = staticData
+        }
         |> Template.buildWithSharedState
             { view = view
             , init = init
@@ -97,11 +97,54 @@ update metadata msg model sharedModel =
             ( model, Cmd.none, Nothing )
 
 
+type alias StaticData =
+    { ms : Int
+    , query : String
+    }
+
+
+
+{- title : String
+   , variante : Int
+   , precio : Float
+   , sku : String
+-}
+
+
+panelExtraDecoder : D.Decoder StaticData
+panelExtraDecoder =
+    JDPipe.decode StaticData
+        |> JDPipe.required "ms" D.int
+        |> JDPipe.required "query" D.string
+
+
+
+--|> JDPipe.requiredAt [ "result", "defaultVariant", "precio" ] D.float
+--|> JDPipe.requiredAt [ "result", "defaultVariant", "sku" ] D.stringstaticRequest : StaticHttp.Request PanelExtra
+
+
 staticData :
     List ( PagePath Pages.PathKey, TemplateType )
     -> StaticHttp.Request StaticData
 staticData siteMetadata =
-    StaticHttp.succeed ()
+    let
+        detalles =
+            Secrets.succeed
+                (\proyId ->
+                    { url =
+                        "https://"
+                            ++ proyId
+                            ++ ".api.sanity.io/v1/data/query/production?query="
+                            ++ Url.percentEncode
+                                """*[_type == "product" && title == "Panel Solar"]"""
+                    , method = "GET"
+                    , headers = []
+                    , body = StaticHttp.emptyBody
+                    }
+                )
+                |> Secrets.with "SANITY_PROJECT_ID"
+    in
+    StaticHttp.request detalles panelExtraDecoder
 
 
 decoder : Decode.Decoder SelComp1
@@ -183,6 +226,9 @@ view model sharedModel allMetadata staticPayload rendered =
                                     |> List.map (Html.map never)
                                )
                         )
+                    , div
+                        [ class "mt-4 text-xl text-center" ]
+                        [ Html.text staticPayload.static.query ]
                     ]
                 ]
             ]
