@@ -94,13 +94,42 @@ update metadata msg model sharedModel =
 
 
 type alias StaticData =
-    { panelSolar : DropList.Option }
+    { panelSolar : List DropList.Option }
 
 
 panelDecoder : D.Decoder StaticData
 panelDecoder =
     let
-        resultadoSanity =
+        resultadoSanityOtherProductVariant =
+            D.list otherVariants
+                |> D.field "variants"
+
+        otherVariants =
+            D.map2 (\miId miLabel -> { id = miId, label = miLabel })
+                (D.field "sku" D.string)
+                (D.field "title" D.string)
+
+        tomaLaCabeza listado =
+            List.head listado
+                |> Maybe.withDefault
+                    [ { id = "pu"
+                    , label = "Plutonium"
+                    } ]
+
+        meteAlRegistro unPanel =
+            { panelSolar = unPanel }
+
+    in
+    D.list resultadoSanityOtherProductVariant
+        |> D.field "result"
+        |> D.map tomaLaCabeza
+        |> D.map meteAlRegistro
+
+
+panelDecoderDV : D.Decoder StaticData
+panelDecoderDV =
+    let
+        resultadoSanityDefaultProductVariant =
             D.map2 (\miId miLabel -> { id = miId, label = miLabel })
                 (D.at [ "defaultProductVariant", "sku" ] D.string)
                 (D.at [ "defaultProductVariant", "title" ] D.string)
@@ -115,10 +144,13 @@ panelDecoder =
         meteAlRegistro unPanel =
             { panelSolar = unPanel }
 
+        hazloListado laCabeza =
+            [ laCabeza ]
     in
-    D.list resultadoSanity
+    D.list resultadoSanityDefaultProductVariant
         |> D.field "result"
         |> D.map tomaLaCabeza
+        |> D.map hazloListado
         |> D.map meteAlRegistro
 
 
