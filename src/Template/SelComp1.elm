@@ -1,17 +1,13 @@
 module Template.SelComp1 exposing (Model, Msg, decoder, template)
 
-import Browser.Dom as Dom
 import DropList
 import Head
 import Head.Seo as Seo
 import Html exposing (Html, div)
 import Html.Attributes as Attr exposing (class)
 import Html.Attributes.Aria as Aria
-import Html.Events
 import Json.Decode as Decode
-import MarkdownRenderer
 import OptimizedDecoder as D
-import OptimizedDecoder.Pipeline as JDPipe
 import OptionRadio
 import Pages exposing (images)
 import Pages.PagePath as PagePath exposing (PagePath)
@@ -98,29 +94,31 @@ update metadata msg model sharedModel =
 
 
 type alias StaticData =
-    { ms : Int
-    , query : String
-    }
+    DropList.Option
+    {- id : String
+    , label : String
+    -}
 
 
+panelDecoder : D.Decoder StaticData
+panelDecoder =
+    let
+        resultadoSanity =
+            D.map2 (\miId miLabel -> { id = miId, label = miLabel })
+                (D.at [ "defaultProductVariant", "sku" ] D.string)
+                (D.at [ "defaultProductVariant", "title" ] D.string)
 
-{- title : String
-   , variante : Int
-   , precio : Float
-   , sku : String
--}
-
-
-panelExtraDecoder : D.Decoder StaticData
-panelExtraDecoder =
-    JDPipe.decode StaticData
-        |> JDPipe.required "ms" D.int
-        |> JDPipe.required "query" D.string
-
-
-
---|> JDPipe.requiredAt [ "result", "defaultVariant", "precio" ] D.float
---|> JDPipe.requiredAt [ "result", "defaultVariant", "sku" ] D.stringstaticRequest : StaticHttp.Request PanelExtra
+        tomaLaCabeza listado =
+            List.head listado
+                |> Maybe.withDefault
+                    { id = "pu"
+                    , label = "Plutonium"
+                    }
+    in
+    D.map tomaLaCabeza
+        (D.field "result"
+            (D.list resultadoSanity)
+        )
 
 
 staticData :
@@ -144,7 +142,7 @@ staticData siteMetadata =
                 )
                 |> Secrets.with "SANITY_PROJECT_ID"
     in
-    StaticHttp.request detalles panelExtraDecoder
+    StaticHttp.request detalles panelDecoder
 
 
 decoder : Decode.Decoder SelComp1
@@ -228,7 +226,10 @@ view model sharedModel allMetadata staticPayload rendered =
                         )
                     , div
                         [ class "mt-4 text-xl text-center" ]
-                        [ Html.text staticPayload.static.query ]
+                        [ Html.text <| Debug.toString staticPayload.static
+
+                        -- , Html.text staticPayload.static.panelSolar.label
+                        ]
                     ]
                 ]
             ]

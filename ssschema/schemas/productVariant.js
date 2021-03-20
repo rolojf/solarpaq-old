@@ -12,7 +12,7 @@ export default {
       title: "Descripción",
       name: "description",
       type: "string",
-    }
+    },
     {
       title: 'Variante',
       name: 'variant',

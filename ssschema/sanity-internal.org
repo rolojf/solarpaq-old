@@ -30,12 +30,8 @@
 | tags        |           | varianteTipo - [ String ] |           |        |
 
 
-
-
-
-
 ** Para Option Radio, PANEL SOLAR
 | elm-pages | Sanity | Tipo   | Proc | Para |
 |-----------+--------+--------+------+------|
-| id        |        | String | No   | View |
-| label     |        | String | No   | View |
+| id        | sku    | String | No   | View |
+| label     | title  | String | No   | View |
