@@ -94,10 +94,7 @@ update metadata msg model sharedModel =
 
 
 type alias StaticData =
-    DropList.Option
-    {- id : String
-    , label : String
-    -}
+    { panelSolar : DropList.Option }
 
 
 panelDecoder : D.Decoder StaticData
@@ -114,11 +111,15 @@ panelDecoder =
                     { id = "pu"
                     , label = "Plutonium"
                     }
+
+        meteAlRegistro unPanel =
+            { panelSolar = unPanel }
+
     in
-    D.map tomaLaCabeza
-        (D.field "result"
-            (D.list resultadoSanity)
-        )
+    D.list resultadoSanity
+        |> D.field "result"
+        |> D.map tomaLaCabeza
+        |> D.map meteAlRegistro
 
 
 staticData :
