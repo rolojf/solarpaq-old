@@ -1,0 +1,41 @@
+* product (Santiy:document)
+
+| Sanity           | elm-pages | Tipo                | Proc | Para |
+|------------------+-----------+---------------------+------+------|
+| title (Producto) | name      | String              |      |      |
+| vendor           |           | vendor - String     |      |      |
+| Categories       |           | categories - String |      |      |
+
+** Variants, Para Option Radio, TIPO DE INVERSOR
+| Sanity      | elm-pages   | Tipo                      | Proc                   | Para   |
+|-------------+-------------+---------------------------+------------------------+--------|
+| title       | descripción | String                    | No                     | View   |
+| description | nota        | String                    | No                     | View   |
+| variant     |             | number                    |                        | Costeo |
+| price       |             | number                    |                        | Costeo |
+| sku         | id          | String                    | No                     | Msg    |
+| tags        | tipo        | varianteTipo - [ String ] | String -> InversorTipo | ??     |
+|-------------+-------------+---------------------------+------------------------+--------|
+| ---         | extremo     | Bool                      | Calculado              | View   |
+
+
+** Variants, para tipo de Panel Solar
+| Sanity      | elm-pages | Tipo                      | Proc      | Para   |
+|-------------+-----------+---------------------------+-----------+--------|
+| title       | label     | String                    | No        | View   |
+| description |           | String                    |           |        |
+| variant     |           | number                    |           | Costeo |
+| price       |           | number                    |           | Costeo |
+| sku         | id        | String                    | No        | Msg    |
+| tags        |           | varianteTipo - [ String ] |           |        |
+
+
+
+
+
+
+** Para Option Radio, PANEL SOLAR
+| elm-pages | Sanity | Tipo   | Proc | Para |
+|-----------+--------+--------+------+------|
+| id        |        | String | No   | View |
+| label     |        | String | No   | View |

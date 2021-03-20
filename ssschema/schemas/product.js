@@ -32,7 +32,7 @@ export default {
     },
     {
       name: 'categories',
-      title: 'Categories',
+      title: 'Categorias',
       type: 'array',
       of: [
         {

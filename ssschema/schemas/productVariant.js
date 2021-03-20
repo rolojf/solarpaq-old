@@ -9,6 +9,11 @@ export default {
       type: 'string',
     },
     {
+      title: "Descripción",
+      name: "description",
+      type: "string",
+    }
+    {
       title: 'Variante',
       name: 'variant',
       type: 'number',
