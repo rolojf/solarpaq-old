@@ -248,7 +248,8 @@ view model sharedModel allMetadata staticPayload rendered =
                             opcionesPalRadio
                             |> Html.map RadioSeleccionado
                          )
-                            :: (DropList.view model.dropList
+                            :: (DropList.view (actualizaDropList model.dropList staticPayload.static.panelSolar)
+                                    -- -- falta aclarar esto ->model.dropList
                                     |> Html.map DropList
                                )
                             :: (Tuple.second rendered
@@ -257,7 +258,7 @@ view model sharedModel allMetadata staticPayload rendered =
                         )
                     , div
                         [ class "mt-4 text-xl text-center" ]
-                        [ Html.text <| Debug.toString staticPayload.static
+                        [ Html.text "" --<| Debug.toString staticPayload.static
 
                         -- , Html.text staticPayload.static.panelSolar.label
                         ]
@@ -266,6 +267,11 @@ view model sharedModel allMetadata staticPayload rendered =
             ]
         ]
     }
+
+
+actualizaDropList : DropList.Model -> List DropList.Option -> DropList.Model
+actualizaDropList model opciones =
+    { model | options = opciones }
 
 
 allOptions : List DropList.Option

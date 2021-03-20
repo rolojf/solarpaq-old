@@ -22,11 +22,11 @@ type alias Model =
 
 
 init : List Option -> Model
-init allOptions =
+init lasOpciones =
     { open = False
     , selectedId = Nothing
     , focusedId = Nothing
-    , options = allOptions
+    , options = lasOpciones
     }
 
 
