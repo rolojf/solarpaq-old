@@ -100,6 +100,17 @@ type alias StaticData =
 panelDecoder : D.Decoder StaticData
 panelDecoder =
     let
+        meteAlRegistro losPaneles =
+            { panelSolar = losPaneles }
+    in
+    D.map2 (::)
+        panelDecoderDefaultVariant
+        panelDecoderOtherVariant
+        |> D.map meteAlRegistro
+
+
+panelDecoderOtherVariant =
+    let
         resultadoSanityOtherProductVariant =
             D.list otherVariants
                 |> D.field "variants"
@@ -113,21 +124,16 @@ panelDecoder =
             List.head listado
                 |> Maybe.withDefault
                     [ { id = "pu"
-                    , label = "Plutonium"
-                    } ]
-
-        meteAlRegistro unPanel =
-            { panelSolar = unPanel }
-
+                      , label = "Plutonium"
+                      }
+                    ]
     in
     D.list resultadoSanityOtherProductVariant
         |> D.field "result"
         |> D.map tomaLaCabeza
-        |> D.map meteAlRegistro
 
 
-panelDecoderDV : D.Decoder StaticData
-panelDecoderDV =
+panelDecoderDefaultVariant =
     let
         resultadoSanityDefaultProductVariant =
             D.map2 (\miId miLabel -> { id = miId, label = miLabel })
@@ -140,18 +146,10 @@ panelDecoderDV =
                     { id = "pu"
                     , label = "Plutonium"
                     }
-
-        meteAlRegistro unPanel =
-            { panelSolar = unPanel }
-
-        hazloListado laCabeza =
-            [ laCabeza ]
     in
     D.list resultadoSanityDefaultProductVariant
         |> D.field "result"
         |> D.map tomaLaCabeza
-        |> D.map hazloListado
-        |> D.map meteAlRegistro
 
 
 staticData :
