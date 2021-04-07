@@ -112,7 +112,7 @@ view model sharedModel allMetadata staticPayload rendered =
     { title = staticPayload.metadata.title
     , body =
         [ div
-            [ class "columna cero" ]
+            [ Attr.css [ Tw.max_w_7xl, Tw.mx_auto, TwBp.lg [ Tw.px_8], TwBp.sm [ Tw.px_6] ] ]
             [ counterView sharedModel
             , Htmls.br [] []
             , Htmls.text "Aquí estaba el listado de la documentación"
