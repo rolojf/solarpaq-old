@@ -6,6 +6,7 @@ import Head
 import Head.Seo as Seo
 import Html exposing (Html, div)
 import Html.Attributes as Attr exposing (class)
+import Html.Events as Events
 import Json.Decode as Decode
 import List.Extra
 import Pages
@@ -15,6 +16,8 @@ import Palette
 import Shared
 import Site
 import StructuredData
+import Tailwind.Breakpoints as TwBp
+import Tailwind.Utilities as Tw
 import Template exposing (StaticPayload, Template, TemplateWithState)
 import TemplateMetadata exposing (BlogPost)
 import TemplateType exposing (TemplateType)
@@ -58,7 +61,8 @@ decoder =
             |> Decode.maybe
             |> Decode.map (Maybe.withDefault False)
         )
-        (Decode.succeed -- definir aquí como va el menú
+        (Decode.succeed
+            -- definir aquí como va el menú
             [ { direccion = "uno"
               , queDice = "One"
               }

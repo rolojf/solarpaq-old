@@ -1,10 +1,12 @@
 module Shared exposing (Model, Msg(..), PageView, RenderedBody, SharedMsg(..), StaticData, UsuarioStatus(..), template)
 
-import Browser.Dom as Dom
-import Html exposing (Html, div)
-import Html.Attributes as Attr exposing (class)
+import Css
+import Css.Global
+import Html exposing (Html)
 import Html.Attributes.Aria as Aria
-import Html.Events
+import Html.Styled as Htmls exposing (div)
+import Html.Styled.Attributes as Attr
+import Html.Styled.Events as Events
 import MarkdownRenderer
 import OptimizedDecoder as D
 import Pages exposing (pages)
@@ -13,11 +15,10 @@ import Pages.ImagePath as ImagePath
 import Pages.PagePath as PagePath exposing (PagePath)
 import Pages.Secrets as Secrets
 import Pages.StaticHttp as StaticHttp
-import Palette
-import Process
 import Svg exposing (path, svg)
 import Svg.Attributes
-import Task
+import Tailwind.Breakpoints as TwBp
+import Tailwind.Utilities as Tw
 import TemplateMetadata
 import TemplateType exposing (TemplateType)
 
@@ -205,33 +206,56 @@ view :
     -> { body : Html msg, title : String }
 view stars page model toMsg pageView =
     { body =
-        div []
-            [ myNav model page |> Html.map toMsg
-            , Html.header
-                [ class "bg-white shadow-sm" ]
-                [ div
-                    [ class "max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8" ]
-                    [ Html.h1
-                        [ class "text-lg lg:text-2xl leading-6 font-bold text-gray-800" ]
-                        [ Html.text pageView.title ]
+        div
+            []
+            [ Css.Global.global Tw.globalStyles
+            , myNav model page
+                |> Htmls.map toMsg
+            , Htmls.header
+                [ Attr.css
+                    [ Tw.bg_white
+                    , Tw.shadow_sm
                     ]
                 ]
-            , Html.main_
+                [ div
+                    [ Attr.css
+                        [ Tw.max_w_7xl
+                        , Tw.mx_auto
+                        , Tw.py_4
+                        , Tw.px_4
+                        , TwBp.lg [ Tw.px_8 ]
+                        , TwBp.sm [ Tw.px_6 ]
+                        ]
+                    ]
+                    [ Htmls.h1
+                        [ Attr.css
+                            [ Tw.text_lg
+                            , TwBp.lg [ Tw.text_2xl ]
+                            , Tw.leading_6
+                            , Tw.font_bold
+                            , Tw.text_gray_800
+                            ]
+                        ]
+                        [ Htmls.text pageView.title ]
+                    ]
+                ]
+            , Htmls.main_
                 []
-                ((incrementView model
-                    |> Html.map toMsg
-                 )
-                    :: pageView.body
+                ((incrementView model |> Htmls.map toMsg)
+                    :: (pageView.body
+                            |> List.map Htmls.fromUnstyled
+                       )
                 )
             , viewFooter
             ]
+            |> Htmls.toUnstyled
     , title = pageView.title
     }
 
 
 incrementView model =
-    div [ Html.Events.onClick Increment ]
-        [ Html.text <| "Shared count: " ++ String.fromInt model.counter ]
+    div [ Events.onClick Increment ]
+        [ Htmls.text <| "Shared count: " ++ String.fromInt model.counter ]
 
 
 myNav :
@@ -240,7 +264,7 @@ myNav :
         { path : PagePath Pages.PathKey
         , frontmatter : TemplateType
         }
-    -> Html Msg
+    -> Htmls.Html Msg
 myNav modelo page =
     let
         getMenu : List TemplateMetadata.Liga
@@ -255,21 +279,21 @@ myNav modelo page =
                 TemplateType.BlogIndex { menu } ->
                     menu
 
-                TemplateType.SelComp1 { menu } ->
-                    menu
-
                 TemplateType.Home { menu } ->
                     menu
 
-        myLogoAndLinks : Html msg
+                TemplateType.SelComp1 { menu } ->
+                    menu
+
+        myLogoAndLinks : Htmls.Html msg
         myLogoAndLinks =
             div
-                [ class "flex items-center" ]
+                [ Attr.css [ Tw.flex, Tw.items_center ] ]
                 [ div
                     -- EL LOGO
-                    [ class "flex-shrink-0" ]
-                    [ Html.img
-                        [ class "h-8 w-8"
+                    [ Attr.css [ Tw.flex_shrink_0 ] ]
+                    [ Htmls.img
+                        [ Attr.css [ Tw.h_8, Tw.w_8 ]
                         , Attr.src "https://tailwindui.com/img/logos/workflow-mark-indigo-500.svg"
                         , Attr.alt "Workflow"
                         ]
@@ -277,33 +301,74 @@ myNav modelo page =
                     ]
                 , div
                     -- LIGAS DE NAVEGACION
-                    [ class "hidden md:block" ]
+                    [ Attr.css [ Tw.hidden, TwBp.md [ Tw.block ] ] ]
                     [ div
-                        [ class "ml-10 flex items-baseline space-x-4" ]
+                        [ Attr.css
+                            [ Tw.ml_10
+                            , Tw.flex
+                            , Tw.items_baseline
+                            , Tw.space_x_4
+                            ]
+                        ]
                         (ligasChulas False <| getMenu)
                     ]
                 ]
 
-        myHiddenBlock : Html Msg
+        myHiddenBlock : Htmls.Html Msg
         myHiddenBlock =
             div
-                [ class "hidden md:block" ]
+                [ Attr.css
+                    [ Tw.hidden
+                    , TwBp.md [ Tw.block ]
+                    ]
+                ]
                 [ div
-                    [ class "ml-4 flex items-center md:ml-6" ]
+                    [ Attr.css
+                        [ Tw.ml_4
+                        , Tw.flex
+                        , Tw.items_center
+                        , TwBp.md [ Tw.ml_6 ]
+                        ]
+                    ]
                     [ div
                         -- Profile dropdown --
-                        [ class "ml-3 relative" ]
+                        [ Attr.css
+                            [ Tw.ml_3
+                            , Tw.relative
+                            ]
+                        ]
                         [ div
                             []
-                            [ Html.button
-                                [ class "max-w-xs bg-gray-800 rounded-full flex items-center text-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+                            [ Htmls.button
+                                [ Attr.css
+                                    [ Tw.max_w_xs
+                                    , Tw.bg_gray_800
+                                    , Tw.rounded_full
+                                    , Tw.flex
+                                    , Tw.items_center
+                                    , Tw.text_sm
+                                    , Tw.text_white
+                                    , Css.focus
+                                        [ Tw.outline_none
+                                        , Tw.ring_2
+                                        , Tw.ring_offset_2
+                                        , Tw.ring_offset_gray_800
+                                        , Tw.ring_white
+                                        ]
+                                    ]
                                 , Attr.id "user-menu"
-                                , Aria.ariaHasPopup "true"
-                                , Html.Events.onClick ToggleProfileMenu
+                                , Aria.ariaHasPopup "true" |> Attr.fromUnstyled
+                                , Events.onClick ToggleProfileMenu
                                 ]
-                                [ Html.span [ class "sr-only" ] [ Html.text "Open user menu" ]
-                                , Html.img
-                                    [ class "h-8 w-8 rounded-full"
+                                [ Htmls.span
+                                    [ Attr.css [ Tw.sr_only ] ]
+                                    [ Htmls.text "Open user menu" ]
+                                , Htmls.img
+                                    [ Attr.css
+                                        [ Tw.h_8
+                                        , Tw.w_8
+                                        , Tw.rounded_full
+                                        ]
                                     , Attr.src "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixqx=g09zpRVLoT&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                                     , Attr.alt ""
                                     ]
@@ -312,91 +377,148 @@ myNav modelo page =
                             ]
                         , if modelo.showProfileMenu then
                             div
-                                [ class "origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5"
-                                , Aria.role "menu"
+                                [ Attr.css
+                                    [ Tw.origin_top_right
+                                    , Tw.absolute
+                                    , Tw.right_0
+                                    , Tw.mt_2
+                                    , Tw.w_48
+                                    , Tw.rounded_md
+                                    , Tw.shadow_lg
+                                    , Tw.py_1
+                                    , Tw.bg_white
+                                    , Tw.ring_1
+                                    , Tw.ring_black
+                                    , Tw.ring_opacity_5
+                                    ]
+                                , Aria.role "menu" |> Attr.fromUnstyled
 
                                 -- , Aria.aria-orientation "vertical"
-                                , Aria.ariaLabelledby "user-menu"
+                                , Aria.ariaLabelledby "user-menu" |> Attr.fromUnstyled
                                 ]
-                                (menuItems "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100")
+                                (menuItems
+                                    [ Tw.block
+                                    , Tw.px_4
+                                    , Tw.py_2
+                                    , Tw.text_sm
+                                    , Tw.text_gray_700
+                                    , Css.hover [ Tw.bg_gray_100 ]
+                                    ]
+                                )
 
                           else
-                            Html.i [] []
+                            Htmls.i [] []
                         ]
                     ]
                 ]
 
-        myHiddenMenu : Html msg
+        myHiddenMenu : Htmls.Html msg
         myHiddenMenu =
             div
-                [ class <|
-                    "md:hidden "
-                        ++ (if modelo.showMobileMenu then
-                                "block"
+                [ Attr.css <|
+                    TwBp.md [ Tw.hidden ]
+                        :: (if modelo.showMobileMenu then
+                                [ Tw.block ]
 
                             else
-                                "hidden"
+                                [ Tw.hidden ]
                            )
                 ]
                 [ div
-                    [ class "px-2 pt-2 pb-3 space-y-1 sm:px-3" ]
+                    [ Attr.css
+                        [ Tw.px_2
+                        , Tw.pt_2
+                        , Tw.pb_3
+                        , Tw.space_y_1
+                        , TwBp.sm [ Tw.px_3 ]
+                        ]
+                    ]
                     (ligasChulas True <| getMenu)
                 , div
-                    [ class "pt-4 pb-3 border-t border-gray-700" ]
+                    [ Attr.css
+                        [ Tw.pt_4
+                        , Tw.pb_3
+                        , Tw.border_t
+                        , Tw.border_gray_700
+                        ]
+                    ]
                     [ div
-                        [ class "flex items-center px-5" ]
+                        [ Attr.css
+                            [ Tw.flex
+                            , Tw.items_center
+                            , Tw.px_5
+                            ]
+                        ]
                         [ div
-                            [ class "flex-shrink-0" ]
-                            [ Html.img
-                                [ class "h-10 w-10 rounded-full"
+                            [ Attr.css [ Tw.flex_shrink_0 ] ]
+                            [ Htmls.img
+                                [ Attr.css [ Tw.h_10, Tw.w_10, Tw.rounded_full ]
                                 , Attr.src "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixqx=g09zpRVLoT&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                                 , Attr.alt ""
                                 ]
                                 []
                             , div
-                                [ class "ml-3" ]
+                                [ Attr.css [ Tw.ml_3 ] ]
                                 [ div
-                                    [ class "text-base font-medium text-white" ]
-                                    [ Html.text "Tom Cook" ]
+                                    [ Attr.css [ Tw.text_base, Tw.font_medium, Tw.text_white ] ]
+                                    [ Htmls.text "Tom Cook" ]
                                 , div
-                                    [ class "text-sm font-medium text-gray-400" ]
-                                    [ Html.text "tom@example.com" ]
+                                    [ Attr.css [ Tw.text_sm, Tw.font_medium, Tw.text_gray_400 ] ]
+                                    [ Htmls.text "tom@example.com" ]
                                 ]
                             ]
                         ]
-                    , div [ class "mt-3 px-2 space-y-1" ]
-                        (menuItems "block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700")
+                    , div [ Attr.css [ Tw.mt_3, Tw.px_2, Tw.space_y_1 ] ]
+                        (menuItems
+                            [ Tw.block
+                            , Tw.px_3
+                            , Tw.py_2
+                            , Tw.rounded_md
+                            , Tw.text_base
+                            , Tw.font_medium
+                            , Tw.text_gray_400
+                            , Css.hover [ Tw.text_white, Tw.bg_gray_700 ]
+                            ]
+                        )
                     ]
                 ]
 
         ligasChulas :
             Bool
             -> List TemplateMetadata.Liga
-            -> List (Html msg)
+            -> List (Htmls.Html msg)
         ligasChulas esMovil menus =
             let
                 clasesBase =
-                    "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md font-medium"
+                    [ Tw.text_gray_300
+                    , Css.hover [ Tw.bg_gray_700, Tw.text_white ]
+                    , Tw.px_3
+                    , Tw.py_2
+                    , Tw.rounded_md
+                    , Tw.font_medium
+                    ]
 
                 claseActual =
-                    "bg-gray-900 text-white px-3 py-2 rounded-md font-medium"
+                    [ Tw.bg_gray_900
+                    , Tw.text_white
+                    , Tw.px_3
+                    , Tw.py_2
+                    , Tw.rounded_md
+                    , Tw.font_medium
+                    ]
 
                 claseActualEnMovil =
-                    " block text-base"
+                    [ Tw.block, Tw.text_base ]
 
                 claseActualEnDesktop =
-                    " text-sm"
+                    [ Tw.text_sm ]
 
                 claseExtraPaMovil =
-                    " block text-base"
+                    [ Tw.block, Tw.text_base ]
 
                 claseExtraPaDesktop =
-                    " text-sm"
+                    [ Tw.text_sm ]
 
-                clasesQueVan :
-                    Bool
-                    -> TemplateMetadata.Liga
-                    -> String
                 clasesQueVan esParaMovil liga =
                     if PagePath.toString page.path == liga.direccion then
                         case esParaMovil of
@@ -414,13 +536,13 @@ myNav modelo page =
                             False ->
                                 clasesBase ++ claseExtraPaDesktop
 
-                ligaChula : String -> TemplateMetadata.Liga -> Html msg
+                -- ligaChula : List Tw.Styles -> TemplateMetadata.Liga -> Html msg
                 ligaChula clases liga =
-                    Html.a
+                    Htmls.a
                         [ Attr.href liga.direccion
-                        , class clases
+                        , Attr.css clases
                         ]
-                        [ Html.text liga.queDice ]
+                        [ Htmls.text liga.queDice ]
             in
             List.map
                 (\algoDelMenu ->
@@ -430,77 +552,109 @@ myNav modelo page =
                 )
                 menus
 
-        menuItems : String -> List (Html msg)
+        -- menuItems : List Styles -> List (Html msg)
         menuItems clases =
-            [ Html.a
+            [ Htmls.a
                 [ Attr.href "#"
-                , class clases
-                , Aria.role "menuitem"
+                , Attr.css clases
+                , Aria.role "menuitem" |> Attr.fromUnstyled
                 ]
-                [ Html.text "Your Profile" ]
-            , Html.a
-                [ class clases
-                , Aria.role "menuitem"
+                [ Htmls.text "Your Profile" ]
+            , Htmls.a
+                [ Attr.css clases
+                , Aria.role "menuitem" |> Attr.fromUnstyled
                 ]
-                [ Html.text "Settings" ]
-            , Html.a
-                [ class clases
-                , Aria.role "menuitem"
+                [ Htmls.text "Settings" ]
+            , Htmls.a
+                [ Attr.css clases
+                , Aria.role "menuitem" |> Attr.fromUnstyled
                 ]
-                [ Html.text "Sign out" ]
+                [ Htmls.text "Sign out" ]
             ]
 
-        heroiconOutlineMenu : Html msg
+        -- heroiconOutlineMenu : Html msg
         heroiconOutlineMenu =
-            svg
-                [ Svg.Attributes.class "h-6 w-6 block"
-
-                -- , xmlns="http://www.w3.org/2000/svg"
-                , Svg.Attributes.fill "none"
-                , Svg.Attributes.viewBox "0 0 24 24"
-                , Svg.Attributes.stroke "currentColor"
-
-                -- aria-hidden="true"
+            div
+                [ Attr.css
+                    [ Tw.h_6, Tw.w_6, Tw.block ]
                 ]
-                [ Svg.path
-                    [ Svg.Attributes.strokeLinecap "round"
-                    , Svg.Attributes.strokeLinejoin "round"
-                    , Svg.Attributes.strokeWidth "2"
-                    , Svg.Attributes.d "M4 6h16M4 12h16M4 18h16"
+                [ svg
+                    -- [ Svg.Attributes.Attr.css [h-6 w-6 block"
+                    -- , xmlns="http://www.w3.org/2000/svg"
+                    [ Svg.Attributes.fill "none"
+                    , Svg.Attributes.viewBox "0 0 24 24"
+                    , Svg.Attributes.stroke "currentColor"
+
+                    -- aria-hidden="true"
                     ]
-                    []
+                    [ Svg.path
+                        [ Svg.Attributes.strokeLinecap "round"
+                        , Svg.Attributes.strokeLinejoin "round"
+                        , Svg.Attributes.strokeWidth "2"
+                        , Svg.Attributes.d "M4 6h16M4 12h16M4 18h16"
+                        ]
+                        []
+                    ]
+                    |> Htmls.fromUnstyled
                 ]
 
-        heroiconOutlineX : Html msg
+        heroiconOutlineX : Htmls.Html msg
         heroiconOutlineX =
-            svg
-                [ Svg.Attributes.class "h-6 w-6 block"
+            div
+                [ Attr.css [ Tw.h_6, Tw.w_6, Tw.block ] ]
+                [ svg
+                    -- Svg.Attributes.Attr.css [h-6 w-6 block"
+                    -- xmlns="http://www.w3.org/2000/svg"
+                    [ Svg.Attributes.fill "none"
+                    , Svg.Attributes.viewBox "0 0 24 24"
+                    , Svg.Attributes.stroke "currentColor"
 
-                -- xmlns="http://www.w3.org/2000/svg"
-                , Svg.Attributes.fill "none"
-                , Svg.Attributes.viewBox "0 0 24 24"
-                , Svg.Attributes.stroke "currentColor"
-
-                -- aria-hidden="true"
-                ]
-                [ path
-                    [ Svg.Attributes.strokeLinecap "round"
-                    , Svg.Attributes.strokeLinejoin "round"
-                    , Svg.Attributes.strokeWidth "2"
-                    , Svg.Attributes.d "M6 18L18 6M6 6l12 12"
+                    -- aria-hidden="true"
                     ]
-                    []
+                    [ path
+                        [ Svg.Attributes.strokeLinecap "round"
+                        , Svg.Attributes.strokeLinejoin "round"
+                        , Svg.Attributes.strokeWidth "2"
+                        , Svg.Attributes.d "M6 18L18 6M6 6l12 12"
+                        ]
+                        []
+                    ]
+                    |> Htmls.fromUnstyled
                 ]
 
-        mobileMenuButton : Html Msg
+        mobileMenuButton : Htmls.Html Msg
         mobileMenuButton =
             div
-                [ class "-mr-2 flex md:hidden" ]
-                [ Html.button
-                    [ class "bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
-                    , Html.Events.onClick ToggleMobileMenu
+                [ Attr.css
+                    [ Tw.neg_mr_2
+                    , Tw.flex
+                    , TwBp.md [ Tw.hidden ]
                     ]
-                    [ Html.span [ class "sr-only" ] [ Html.text "Open main menu" ]
+                ]
+                [ Htmls.button
+                    [ Attr.css
+                        [ Tw.bg_gray_800
+                        , Tw.inline_flex
+                        , Tw.items_center
+                        , Tw.justify_center
+                        , Tw.p_2
+                        , Tw.rounded_md
+                        , Tw.text_gray_400
+                        , Css.hover
+                            [ Tw.text_white
+                            , Tw.bg_gray_700
+                            ]
+                        , Css.focus
+                            [ Tw.outline_none
+                            , Tw.ring_2
+                            , Tw.ring_offset_2
+                            , Tw.ring_offset_gray_800
+                            , Tw.ring_white
+                            ]
+                        ]
+                    , Events.onClick ToggleMobileMenu
+                    ]
+                    [ Htmls.span [ Attr.css [ Tw.sr_only ] ] [ Htmls.text "Open main menu" ]
                     , if modelo.showMobileMenu then
                         heroiconOutlineX
 
@@ -509,12 +663,25 @@ myNav modelo page =
                     ]
                 ]
     in
-    Html.nav
-        [ class "bg-gray-800" ]
+    Htmls.nav
+        [ Attr.css [ Tw.bg_gray_800 ] ]
         [ div
-            [ class "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" ]
+            [ Attr.css
+                [ Tw.max_w_7xl
+                , Tw.mx_auto
+                , Tw.px_4
+                , TwBp.lg [ Tw.px_8 ]
+                , TwBp.sm [ Tw.px_6 ]
+                ]
+            ]
             [ div
-                [ class "flex items-center justify-between h-16" ]
+                [ Attr.css
+                    [ Tw.flex
+                    , Tw.items_center
+                    , Tw.justify_between
+                    , Tw.h_16
+                    ]
+                ]
                 [ myLogoAndLinks
                 , myHiddenBlock
                 , mobileMenuButton
@@ -524,35 +691,43 @@ myNav modelo page =
         ]
 
 
-viewFooter : Html msg
+viewFooter : Htmls.Html msg
 viewFooter =
     let
-        ligaAlPie : String -> String -> Html msg
+        ligaAlPie : String -> String -> Htmls.Html msg
         ligaAlPie liga texto =
             div
-                [ class "px-5 py-2" ]
-                [ Html.a
+                [ Attr.css [ Tw.px_5, Tw.py_2 ] ]
+                [ Htmls.a
                     [ Attr.href liga
-                    , class "text-base text-gray-600 hover:text-black"
+                    , Attr.css
+                        [ Tw.text_base
+                        , Tw.text_gray_600
+                        , Css.hover [ Tw.text_black ]
+                        ]
                     ]
-                    [ Html.text texto ]
+                    [ Htmls.text texto ]
                 ]
 
-        svgSocialIcon : String -> Html msg
+        svgSocialIcon : String -> Htmls.Html msg
         svgSocialIcon superD =
-            svg
-                [ Svg.Attributes.class "h-6 w-6"
-                , Svg.Attributes.fill "currentColor"
-                , Svg.Attributes.viewBox "0 0 24 24"
+            div
+                [ Attr.css [ Tw.h_6, Tw.w_6 ] ]
+                [ svg
+                    -- [ Svg.Attributes.Attr.css []
+                    [ Svg.Attributes.fill "currentColor"
+                    , Svg.Attributes.viewBox "0 0 24 24"
 
-                -- aria-hidden="true"
-                ]
-                [ Svg.path
-                    [ Svg.Attributes.fillRule "evenodd"
-                    , Svg.Attributes.d superD
-                    , Svg.Attributes.clipRule "evenodd"
+                    -- aria-hidden="true"
                     ]
-                    []
+                    [ Svg.path
+                        [ Svg.Attributes.fillRule "evenodd"
+                        , Svg.Attributes.d superD
+                        , Svg.Attributes.clipRule "evenodd"
+                        ]
+                        []
+                    ]
+                    |> Htmls.fromUnstyled
                 ]
 
         svgFacebook =
@@ -567,15 +742,15 @@ viewFooter =
         svgInstagram =
             svgSocialIcon "M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
 
-        ligaIcono : String -> String -> SocialIcons -> Html msg
+        ligaIcono : String -> String -> SocialIcons -> Htmls.Html msg
         ligaIcono direccion srCual iconoSocial =
-            Html.a
+            Htmls.a
                 [ Attr.href direccion
-                , class "text-gray-400 hover:text-gray-500"
+                , Attr.css [ Tw.text_gray_400, Css.hover [ Tw.text_gray_500 ] ]
                 ]
-                [ Html.span
-                    [ class "sr-only" ]
-                    [ Html.text srCual ]
+                [ Htmls.span
+                    [ Attr.css [ Tw.sr_only ] ]
+                    [ Htmls.text srCual ]
                 , case iconoSocial of
                     Facebook ->
                         svgFacebook
@@ -590,20 +765,35 @@ viewFooter =
                         svgGithub
                 ]
     in
-    Html.footer
+    Htmls.footer
         []
         [ div
             []
             [ div
-                [ class "bg-white py-4" ]
+                [ Attr.css [ Tw.bg_white, Tw.py_4 ] ]
                 []
             , div
-                [ class "bg-gray-200" ]
+                [ Attr.css [ Tw.bg_gray_200 ] ]
                 [ div
-                    [ class "max-w-7xl mx-auto py-12 px-4 overflow-hidden sm:px-6 lg:px-8" ]
-                    [ Html.nav
-                        [ class "-mx-5 -my-2 flex flex-wrap justify-center"
-                        , Aria.ariaLabel "Footer"
+                    [ Attr.css
+                        [ Tw.max_w_7xl
+                        , Tw.mx_auto
+                        , Tw.py_12
+                        , Tw.px_4
+                        , Tw.overflow_hidden
+                        , TwBp.lg [ Tw.px_8 ]
+                        , TwBp.sm [ Tw.px_6 ]
+                        ]
+                    ]
+                    [ Htmls.nav
+                        [ Attr.css
+                            [ Tw.neg_mx_5
+                            , Tw.neg_my_2
+                            , Tw.flex
+                            , Tw.flex_wrap
+                            , Tw.justify_center
+                            ]
+                        , Aria.ariaLabel "Footer" |> Attr.fromUnstyled
                         ]
                         [ ligaAlPie "#" "About"
                         , ligaAlPie "#" "Blog"
@@ -613,15 +803,27 @@ viewFooter =
                         , ligaAlPie "#" "Partners"
                         ]
                     , div
-                        [ class "mt-8 flex justify-center space-x-6" ]
+                        [ Attr.css
+                            [ Tw.mt_8
+                            , Tw.flex
+                            , Tw.justify_center
+                            , Tw.space_x_6
+                            ]
+                        ]
                         [ ligaIcono "facebook.com" "facebook" Facebook
                         , ligaIcono "instagram.com" "Instagram" Instagram
                         , ligaIcono "twitter.com" "Twitter" Twitter
                         , ligaIcono "github.com" "GitHub" Github
                         ]
-                    , Html.p
-                        [ class "mt-8 text-center text-base text-gray-500" ]
-                        [ Html.text "&copy; 2020 Workflow, Inc. All rights reserved." ]
+                    , Htmls.p
+                        [ Attr.css
+                            [ Tw.mt_8
+                            , Tw.text_center
+                            , Tw.text_base
+                            , Tw.text_gray_500
+                            ]
+                        ]
+                        [ Htmls.text "&copy; 2020 Workflow, Inc. All rights reserved." ]
                     ]
                 ]
             ]

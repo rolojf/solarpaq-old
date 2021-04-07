@@ -1,21 +1,24 @@
 module Template.Home exposing (Model, Msg, decoder, template)
 
 import Browser.Dom as Dom
+import Css
 import Head
 import Head.Seo as Seo
-import Html exposing (Html, div)
-import Html.Attributes as Attr exposing (class)
+import Html exposing (Html)
 import Html.Attributes.Aria as Aria
-import Html.Events
+import Html.Styled as Htmls exposing (div)
+import Html.Styled.Attributes as Attr exposing (class)
+import Html.Styled.Events as Events
 import Json.Decode as Decode
 import MarkdownRenderer
 import Pages exposing (images)
 import Pages.PagePath as PagePath exposing (PagePath)
 import Pages.StaticHttp as StaticHttp
-import Palette
 import Process
 import Shared exposing (UsuarioStatus)
 import Site
+import Tailwind.Breakpoints as TwBp
+import Tailwind.Utilities as Tw
 import Task
 import Template exposing (StaticPayload, TemplateWithState)
 import TemplateMetadata exposing (Home)
@@ -256,77 +259,93 @@ view :
 view model sharedModel allMetadata staticPayload rendered =
     { title = staticPayload.metadata.title
     , body =
-        [ div [ class "columna cero" ]
+        [ div
+            [ class "columna cero" ]
             [ counterView sharedModel
-            , Html.text "Aquí estaba el listado de la documentación"
+            , Htmls.text "Aquí estaba el listado de la documentación"
             , div [ class "segunda columna" ]
                 [ tocView staticPayload.path (Tuple.first rendered)
                 , div
                     [ class "tercer columna" ]
-                    (Tuple.second rendered |> List.map (Html.map never))
+                    (Tuple.second rendered
+                        |> List.map (Html.map never)
+                        |> List.map Htmls.fromUnstyled
+                    )
                 ]
             , div
-                [ class "max-w-7xl mx-auto sm:px-6 lg:px-8" ]
+                [ Attr.css
+                    [ Tw.max_w_7xl
+                    , Tw.mx_auto
+                    , TwBp.sm [ Tw.px_6 ]
+                    , TwBp.lg [ Tw.px_8 ]
+                    ]
+                ]
                 [ viewFormulario model
                 , case ( model.listo, model.usuarioStatus ) of
                     ( True, Shared.Desconocido ) ->
                         viewChallenge model
 
                     ( True, Shared.Rechazado ) ->
-                        Html.text "Shame on you!"
+                        Htmls.text "Shame on you!"
 
                     ( True, Shared.Conocido ) ->
-                        Html.text "Wellcome!"
+                        Htmls.text "Wellcome!"
 
                     ( True, Shared.DiceQueRegresa ) ->
-                        Html.text "Ya veremos..."
+                        Htmls.text "Ya veremos..."
 
                     ( False, _ ) ->
-                        Html.text ""
+                        Htmls.text ""
                 ]
             ]
+            |> Htmls.toUnstyled
         ]
     }
 
 
-counterView : Shared.Model -> Html Msg
+counterView : Shared.Model -> Htmls.Html Msg
 counterView sharedModel =
-    Html.text <| "Docs count: " ++ String.fromInt sharedModel.counter
+    Htmls.text <| "Docs count: " ++ String.fromInt sharedModel.counter
 
 
-tocView : PagePath Pages.PathKey -> MarkdownRenderer.TableOfContents -> Html msg
+tocView : PagePath Pages.PathKey -> MarkdownRenderer.TableOfContents -> Htmls.Html msg
 tocView path toc =
     div [ class "toc uno" ]
-        [ Html.text "Table of Contents"
+        [ Htmls.text "Table of Contents"
         , div [ class "toc dos" ]
             (toc
                 |> List.map
                     (\heading ->
-                        Html.a
+                        Htmls.a
                             [ Attr.href
                                 (PagePath.toString path ++ "#" ++ heading.anchorId)
                             , class "clase de ligas"
                             ]
-                            [ Html.text heading.name ]
+                            [ Htmls.text heading.name ]
                     )
             )
         ]
 
 
-viewFormulario : Model -> Html Msg
+viewFormulario : Model -> Htmls.Html Msg
 viewFormulario model =
     let
         viewCampoNombre =
             div
                 []
-                [ Html.label
+                [ Htmls.label
                     [ Attr.for "first_name"
-                    , class "block text-sm font-medium text-gray-700"
+                    , Attr.css
+                        [ Tw.block
+                        , Tw.text_sm
+                        , Tw.font_medium
+                        , Tw.text_gray_700
+                        ]
                     ]
-                    [ Html.text "First name" ]
+                    [ Htmls.text "First name" ]
                 , div
-                    [ class "mt-1" ]
-                    [ Html.input
+                    [ Attr.css [ Tw.mt_1 ] ]
+                    [ Htmls.input
                         [ Attr.type_ "text"
                         , Attr.name "first_name"
                         , Attr.id "first_name"
@@ -334,8 +353,19 @@ viewFormulario model =
                         , Attr.minlength 2
                         , Attr.maxlength 15
                         , Attr.autocomplete True -- "given-name"
-                        , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                        , Html.Events.onInput Nombre
+                        , Attr.css
+                            [ Tw.block
+                            , Tw.w_full
+                            , Tw.shadow_sm
+                            , TwBp.sm [ Tw.text_sm ]
+                            , Css.focus
+                                [ Tw.ring_indigo_500
+                                , Tw.border_indigo_500
+                                ]
+                            , Tw.border_gray_300
+                            , Tw.rounded_md
+                            ]
+                        , Events.onInput Nombre
                         ]
                         []
                     ]
@@ -343,20 +373,36 @@ viewFormulario model =
 
         viewCampoApellido =
             div []
-                [ Html.label
+                [ Htmls.label
                     [ Attr.for "last_name"
-                    , class "block text-sm font-medium text-gray-700"
+                    , Attr.css
+                        [ Tw.block
+                        , Tw.text_sm
+                        , Tw.font_medium
+                        , Tw.text_gray_700
+                        ]
                     ]
-                    [ Html.text "Last name" ]
+                    [ Htmls.text "Last name" ]
                 , div
-                    [ class "mt-1" ]
-                    [ Html.input
+                    [ Attr.css [ Tw.mt_1 ] ]
+                    [ Htmls.input
                         [ Attr.type_ "text"
                         , Attr.name "last_name"
                         , Attr.id "last_name"
                         , Attr.autocomplete True -- "family-name"
-                        , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                        , Html.Events.onInput Apellido
+                        , Attr.css
+                            [ Tw.block
+                            , Tw.w_full
+                            , Tw.shadow_sm
+                            , TwBp.sm [ Tw.text_sm ]
+                            , Css.focus
+                                [ Tw.ring_indigo_500
+                                , Tw.border_indigo_500
+                                ]
+                            , Tw.border_gray_300
+                            , Tw.rounded_md
+                            ]
+                        , Events.onInput Apellido
                         ]
                         []
                     ]
@@ -364,21 +410,37 @@ viewFormulario model =
 
         viewCampoCorreo =
             div
-                [ class "sm:col-span-2" ]
-                [ Html.label
+                [ Attr.css [ TwBp.sm [ Tw.col_span_2 ] ] ]
+                [ Htmls.label
                     [ Attr.for "email"
-                    , class "block text-sm font-medium text-gray-700"
+                    , Attr.css
+                        [ Tw.block
+                        , Tw.text_sm
+                        , Tw.font_medium
+                        , Tw.text_gray_700
+                        ]
                     ]
-                    [ Html.text "Email" ]
+                    [ Htmls.text "Email" ]
                 , div
-                    [ class "mt-1" ]
-                    [ Html.input
+                    [ Attr.css [ Tw.mt_1 ] ]
+                    [ Htmls.input
                         [ Attr.id "email"
                         , Attr.name "email"
                         , Attr.type_ "email"
                         , Attr.autocomplete True --"email"
-                        , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                        , Html.Events.onInput Correo
+                        , Attr.css
+                            [ Tw.block
+                            , Tw.w_full
+                            , Tw.shadow_sm
+                            , TwBp.sm [ Tw.text_sm ]
+                            , Css.focus
+                                [ Tw.ring_indigo_500
+                                , Tw.border_indigo_500
+                                ]
+                            , Tw.border_gray_300
+                            , Tw.rounded_md
+                            ]
+                        , Events.onInput Correo
                         ]
                         []
                     ]
@@ -386,23 +448,35 @@ viewFormulario model =
 
         viewCampoTelefono =
             div
-                [ class "sm:col-span-2" ]
+                [ Attr.css [ TwBp.sm [ Tw.col_span_2 ] ] ]
                 [ div
-                    [ class "flex justify-between" ]
-                    [ Html.label
+                    [ Attr.css
+                        [ Tw.flex
+                        , Tw.justify_between
+                        ]
+                    ]
+                    [ Htmls.label
                         [ Attr.for "phone"
-                        , class "block text-sm font-medium text-gray-700"
+                        , Attr.css
+                            [ Tw.block
+                            , Tw.text_sm
+                            , Tw.font_medium
+                            , Tw.text_gray_700
+                            ]
                         ]
-                        [ Html.text "Phone" ]
-                    , Html.span
+                        [ Htmls.text "Phone" ]
+                    , Htmls.span
                         [ Attr.id "phone_description"
-                        , class "text-sm text-gray-500"
+                        , Attr.css
+                            [ Tw.text_sm
+                            , Tw.text_gray_500
+                            ]
                         ]
-                        [ Html.text "Optional" ]
+                        [ Htmls.text "Optional" ]
                     ]
                 , div
-                    [ class "mt-1" ]
-                    [ Html.input
+                    [ Attr.css [ Tw.mt_1 ] ]
+                    [ Htmls.input
                         [ Attr.type_ "text"
                         , Attr.name "phone"
                         , Attr.id "phone"
@@ -410,9 +484,17 @@ viewFormulario model =
                         , Attr.maxlength 15
                         , Attr.value model.telefono
                         , Attr.autocomplete True -- "tel"
-                        , Aria.ariaDescribedby "phone_description"
-                        , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                        , Html.Events.onInput Telefono
+                        , Aria.ariaDescribedby "phone_description" |> Attr.fromUnstyled
+                        , Attr.css
+                            [ Tw.block
+                            , Tw.w_full
+                            , Tw.shadow_sm
+                            , TwBp.sm [ Tw.text_sm ]
+                            , Css.focus [ Tw.ring_indigo_500, Tw.border_indigo_500 ]
+                            , Tw.border_gray_300
+                            , Tw.rounded_md
+                            ]
+                        , Events.onInput Telefono
                         ]
                         []
                     ]
@@ -420,29 +502,37 @@ viewFormulario model =
 
         viewCampoComment =
             div
-                [ class "sm:col-span-2" ]
+                [ Attr.css [ TwBp.sm [ Tw.col_span_2 ] ] ]
                 [ div
-                    [ class "flex justify-between" ]
-                    [ Html.label
+                    [ Attr.css [ Tw.flex, Tw.justify_between ] ]
+                    [ Htmls.label
                         [ Attr.for "how_can_we_help"
-                        , class "block text-sm font-medium text-gray-700"
+                        , Attr.css [ Tw.block, Tw.text_sm, Tw.font_medium, Tw.text_gray_700 ]
                         ]
-                        [ Html.text "How can we help you?" ]
-                    , Html.span
+                        [ Htmls.text "How can we help you?" ]
+                    , Htmls.span
                         [ Attr.id "how_can_we_help_description"
-                        , class "text-sm text-gray-500"
+                        , Attr.css [ Tw.text_sm, Tw.text_gray_500 ]
                         ]
-                        [ Html.text ">Max. 500 characters" ]
+                        [ Htmls.text ">Max. 500 characters" ]
                     ]
                 , div
-                    [ class "mt-1" ]
-                    [ Html.textarea
+                    [ Attr.css [ Tw.mt_1 ] ]
+                    [ Htmls.textarea
                         [ Attr.id "how_can_we_help"
                         , Attr.name "how_can_we_help"
-                        , Aria.ariaDescribedby "how_can_we_help_description"
+                        , Aria.ariaDescribedby "how_can_we_help_description" |> Attr.fromUnstyled
                         , Attr.rows 4
-                        , class "block w-full shadow-sm sm:text-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
-                        , Html.Events.onInput Comentario
+                        , Attr.css
+                            [ Tw.block
+                            , Tw.w_full
+                            , Tw.shadow_sm
+                            , TwBp.sm [ Tw.text_sm ]
+                            , Css.focus [ Tw.ring_indigo_500, Tw.border_indigo_500 ]
+                            , Tw.border_gray_300
+                            , Tw.rounded_md
+                            ]
+                        , Events.onInput Comentario
                         ]
                         []
                     ]
@@ -450,20 +540,28 @@ viewFormulario model =
 
         viewComoSupoDeNos =
             div
-                [ class "sm:col-span-2" ]
-                [ Html.label
+                [ Attr.css [ TwBp.sm [ Tw.col_span_2 ] ] ]
+                [ Htmls.label
                     [ Attr.for "how_did_you_hear_about_us"
-                    , class "block text-sm font-medium text-gray-700"
+                    , Attr.css [ Tw.block, Tw.text_sm, Tw.font_medium, Tw.text_gray_700 ]
                     ]
-                    [ Html.text "How did you hear about us?" ]
+                    [ Htmls.text "How did you hear about us?" ]
                 , div
-                    [ class "mt-1" ]
-                    [ Html.input
+                    [ Attr.css [ Tw.mt_1 ] ]
+                    [ Htmls.input
                         [ Attr.type_ "text"
                         , Attr.name "how_did_you_hear_about_us"
                         , Attr.id "how_did_you_hear_about_us"
-                        , class "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                        , Html.Events.onInput ComoSupo
+                        , Attr.css
+                            [ Tw.shadow_sm
+                            , Css.focus [ Tw.ring_indigo_500, Tw.border_indigo_500 ]
+                            , Tw.block
+                            , Tw.w_full
+                            , TwBp.sm [ Tw.text_sm ]
+                            , Tw.border_gray_300
+                            , Tw.rounded_md
+                            ]
+                        , Events.onInput ComoSupo
                         ]
                         []
                     ]
@@ -471,22 +569,42 @@ viewFormulario model =
 
         viewBotonSubmit =
             div
-                [ class "text-right sm:col-span-2" ]
-                [ Html.button
+                [ Attr.css [ Tw.text_right, TwBp.sm [ Tw.col_span_2 ] ] ]
+                [ Htmls.button
                     [ Attr.type_ "submit"
-                    , class "inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    , Attr.css
+                        [ Tw.inline_flex
+                        , Tw.justify_center
+                        , Tw.py_2
+                        , Tw.px_4
+                        , Tw.border
+                        , Tw.border_transparent
+                        , Tw.shadow_sm
+                        , Tw.text_sm
+                        , Tw.font_medium
+                        , Tw.rounded_md
+                        , Tw.text_white
+                        , Tw.bg_indigo_600
+                        , Css.hover [ Tw.bg_indigo_700 ]
+                        , Css.focus [ Tw.outline_none, Tw.ring_2, Tw.ring_offset_2, Tw.ring_indigo_500 ]
+                        ]
                     ]
-                    [ Html.text "Submit" ]
+                    [ Htmls.text "Submit" ]
                 ]
     in
     div
-        [ class "relative bg-white" ]
+        [ Attr.css [ Tw.relative, Tw.bg_white ] ]
         [ div
-            [ class "lg:absolute lg:inset-0" ]
+            [ Attr.css [ TwBp.lg [ Tw.absolute, Tw.inset_0 ] ] ]
             [ div
-                [ class "lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2" ]
-                [ Html.img
-                    [ class "h-56 w-full object-cover lg:absolute lg:h-full"
+                [ Attr.css [ TwBp.lg [ Tw.absolute, Tw.inset_y_0, Tw.right_0, Tw.w_1over2 ] ] ]
+                [ Htmls.img
+                    [ Attr.css
+                        [ Tw.h_56
+                        , Tw.w_full
+                        , Tw.object_cover
+                        , TwBp.lg [ Tw.absolute, Tw.h_full ]
+                        ]
                     , Attr.src "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-1.2.1&ixqx=g09zpRVLoT&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1567&q=80"
                     , Attr.alt ""
                     ]
@@ -494,22 +612,60 @@ viewFormulario model =
                 ]
             ]
         , div
-            [ class "relative pt-12 pb-16 px-4 sm:pt-16 sm:px-6 lg:px-8 lg:max-w-7xl lg:mx-auto lg:grid lg:grid-cols-2" ]
+            [ Attr.css
+                [ Tw.relative
+                , Tw.pt_12
+                , Tw.pb_16
+                , Tw.px_4
+                , TwBp.sm [ Tw.pt_16, Tw.px_6 ]
+                , TwBp.lg
+                    [ Tw.px_8
+                    , Tw.max_w_7xl
+                    , Tw.mx_auto
+                    , Tw.grid
+                    , Tw.grid_cols_2
+                    ]
+                ]
+            ]
             [ div
-                [ class "lg:pr-8" ]
+                [ Attr.css [ TwBp.lg [ Tw.pr_8 ] ] ]
                 [ div
-                    [ class "max-w-md mx-auto sm:max-w-lg lg:mx-0" ]
-                    [ Html.h2
-                        [ class "text-3xl font-extrabold tracking-tight sm:text-4xl" ]
-                        [ Html.text "Let's work together" ]
-                    , Html.p
-                        [ class "mt-4 text-lg text-gray-500 sm:mt-3" ]
-                        [ Html.text "We’d love to hear from you! Send us a message using the form opposite, or email us. We’d love to hear from you! Send us a message using the form opposite, or email us." ]
-                    , Html.form
+                    [ Attr.css
+                        [ Tw.max_w_md
+                        , Tw.mx_auto
+                        , TwBp.lg [ Tw.mx_0 ]
+                        , TwBp.sm [ Tw.max_w_lg ]
+                        ]
+                    ]
+                    [ Htmls.h2
+                        [ Attr.css
+                            [ Tw.text_3xl
+                            , Tw.font_extrabold
+                            , Tw.tracking_tight
+                            , TwBp.sm [ Tw.text_4xl ]
+                            ]
+                        ]
+                        [ Htmls.text "Let's work together" ]
+                    , Htmls.p
+                        [ Attr.css
+                            [ Tw.mt_4
+                            , Tw.text_lg
+                            , Tw.text_gray_500
+                            , TwBp.sm [ Tw.mt_3 ]
+                            ]
+                        ]
+                        [ Htmls.text "We’d love to hear from you! Send us a message using the form opposite, or email us. We’d love to hear from you! Send us a message using the form opposite, or email us." ]
+                    , Htmls.form
                         [ Attr.action "#"
                         , Attr.method "POST"
-                        , Html.Events.onSubmit Enviado
-                        , class "mt-9 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8"
+                        , Events.onSubmit Enviado
+                        , Attr.css
+                            [ Tw.mt_9
+                            , Tw.grid
+                            , Tw.grid_cols_1
+                            , Tw.gap_y_6
+                            , TwBp.sm [ Tw.grid_cols_2, Tw.gap_x_8 ]
+                            ]
                         ]
                         [ viewCampoNombre
                         , viewCampoApellido
@@ -525,43 +681,99 @@ viewFormulario model =
         ]
 
 
-viewChallenge : Model -> Html Msg
+viewChallenge : Model -> Htmls.Html Msg
 viewChallenge model =
     div
         [ class "la-base-modal" ]
         [ div
-            [ class <|
-                "mm-fondo"
+            [ Attr.css <|
+                [ Tw.bg_green_100
+                , Tw.shadow
+                , Tw.rounded_lg
+                , Tw.mx_auto
+                , Tw.mt_24
+                , Tw.w_10over12
+                , Tw.h_64
+                , TwBp.md [ Tw.max_w_md, Tw.mx_auto, Tw.mt_48 ]
+                ]
                     ++ (if model.nuevoIntento == YaRespondio then
-                            " animate-bounce"
+                            [ Tw.animate_bounce ]
 
                         else
-                            ""
+                            []
                        )
             ]
-            [ Html.h3
-                [ class "mm-titulo" ]
-                [ Html.text "Validación Rápida" ]
-            , Html.p
-                [ class "mm-explic" ]
-                [ Html.text "Contesta lo siguiente para validar que eres humano y no un bot" ]
+            [ Htmls.h3
+                [ Attr.css
+                    [ Tw.pt_4
+                    , Tw.ml_3
+                    , Tw.text_xl
+                    , Tw.leading_6
+                    , Tw.font_medium
+                    , Tw.text_gray_900
+                    , TwBp.md [ Tw.ml_6 ]
+                    ]
+                ]
+                [ Htmls.text "Validación Rápida" ]
+            , Htmls.p
+                [ Attr.css
+                    [ Tw.mt_2
+                    , Tw.mx_6
+                    , Tw.text_base
+                    , Tw.leading_5
+                    , Tw.text_gray_500
+                    ]
+                ]
+                [ Htmls.text "Contesta lo siguiente para validar que eres humano y no un bot" ]
             , div
-                [ class "mm-fondo-reto" ]
-                [ Html.p
-                    [ class "mm-reto" ]
-                    [ Html.text "Resuleve la siguiente ecuación: " ]
+                [ Attr.css
+                    [ Tw.w_4over5
+                    , Tw.bg_yellow_100
+                    , Tw.mt_6
+                    , Tw.mx_auto
+                    , Tw.h_32
+                    ]
+                ]
+                [ Htmls.p
+                    [ Attr.css
+                        [ Tw.pt_5
+                        , Tw.pl_12
+                        , Tw.text_base
+                        , Tw.font_medium
+                        , Tw.text_gray_700
+                        ]
+                    ]
+                    [ Htmls.text "Resuleve la siguiente ecuación: " ]
                 , div
-                    [ class "mm-acomodo-ecuacion" ]
-                    [ Html.p
+                    [ Attr.css
+                        [ Tw.ml_6
+                        , Tw.mt_4
+                        , Tw.flex
+                        , Tw.flex_row
+                        , Tw.items_center
+                        , Tw.content_center
+                        , Tw.justify_center
+                        , Tw.text_base
+                        ]
+                    ]
+                    [ Htmls.p
                         []
-                        [ Html.text "7 + " ]
-                    , Html.label
-                        [ class "sr-only"
+                        [ Htmls.text "7 + " ]
+                    , Htmls.label
+                        [ Attr.css [ Tw.sr_only ]
                         , Attr.for "valor"
                         ]
-                        [ Html.text "número" ]
-                    , Html.input
-                        [ class "mm-campo text-center"
+                        [ Htmls.text "número" ]
+                    , Htmls.input
+                        [ Attr.css
+                            [ Tw.text_center
+                            , Tw.mx_2
+                            , Tw.w_5
+                            , Tw.rounded_md
+                            , Tw.shadow_sm
+                            , TwBp.sm [ Tw.leading_5, Tw.text_sm ]
+                            ]
+                            -- Tw.block, Tw.w_full del .apparel-campo
                         , Attr.id "valor-challenge"
                         , case model.nuevoIntento of
                             VaPues ->
@@ -574,34 +786,34 @@ viewChallenge model =
                                 Attr.value model.queRespondio
 
                             YaOk ->
-                                class "animate-ping"
+                                Attr.css [ Tw.animate_ping ]
                         , class "form-input"
-                        , Html.Events.onInput Respondio
+                        , Events.onInput Respondio
                         ]
                         []
-                    , Html.p
+                    , Htmls.p
                         []
-                        [ Html.text "= 11" ]
+                        [ Htmls.text "= 11" ]
                     ]
                 , if model.intentos >= 1 then
-                    Html.p
-                        [ class
-                            ("text-right mx-4 "
+                    Htmls.p
+                        [ Attr.css
+                            ([ Tw.text_right, Tw.mx_4 ]
                                 ++ (if model.intentos == 1 then
-                                        "text-black"
+                                        [ Tw.text_black ]
 
                                     else if model.intentos == 2 then
-                                        "text-red-500"
+                                        [ Tw.text_red_500 ]
 
                                     else
-                                        "text-red-500 font-bold italic"
+                                        [ Tw.text_red_500, Tw.font_bold, Tw.italic ]
                                    )
                             )
                         ]
-                        [ Html.text "Intenta de nuevo!" ]
+                        [ Htmls.text "Intenta de nuevo!" ]
 
                   else
-                    Html.p [] []
+                    Htmls.p [] []
                 ]
             ]
         ]
