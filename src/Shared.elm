@@ -285,6 +285,9 @@ myNav modelo page =
                 TemplateType.SelComp1 { menu } ->
                     menu
 
+                TemplateType.Question { menu } ->
+                    menu
+
         myLogoAndLinks : Htmls.Html msg
         myLogoAndLinks =
             div

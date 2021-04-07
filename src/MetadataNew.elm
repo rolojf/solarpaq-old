@@ -6,6 +6,7 @@ import Template.BlogPost
 import Template.Home
 import Template.Page
 import Template.SelComp1
+import Template.Question
 import TemplateType exposing (TemplateType)
 
 
@@ -34,6 +35,10 @@ decoder =
                     "home" ->
                         Template.Home.decoder
                             |> Decode.map TemplateType.Home
+
+                    "question" ->
+                        Template.Question.decoder
+                            |> Decode.map TemplateType.Question
 
                     _ ->
                         Decode.fail <| "Pagina con \"tipo\" inesperado " ++ pageType

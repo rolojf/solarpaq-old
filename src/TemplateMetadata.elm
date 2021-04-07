@@ -36,6 +36,12 @@ type alias Home =
     }
 
 
+type alias Question =
+    { title : String
+    , menu : List Liga
+    }
+
+
 type alias Pagina =
     { title : String
     , description : String
