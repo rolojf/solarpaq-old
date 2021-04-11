@@ -1,6 +1,5 @@
 module Template.Question exposing (Model, Msg, decoder, template)
 
-import Browser.Dom as Dom
 import Css
 import Head
 import Head.Seo as Seo
@@ -13,7 +12,6 @@ import Json.Decode as Decode
 import Pages exposing (images)
 import Pages.PagePath as PagePath exposing (PagePath)
 import Pages.StaticHttp as StaticHttp
-import Process
 import Shared exposing (UsuarioStatus)
 import Site
 import Tailwind.Breakpoints as TwBp
@@ -29,18 +27,14 @@ type alias StaticData =
 
 
 type alias Model =
-    { intentos : Int
-    , usuarioStatus : UsuarioStatus
+    { usuarioStatus : UsuarioStatus
     , nombre : String
     , comoSupo : String
     , correo : String
     , comentario : String
     , telefono : String
     , apellido : String
-    , respondioBien : Bool
     , listo : Bool
-    , nuevoIntento : Intentos
-    , queRespondio : String
     }
 
 
@@ -50,11 +44,8 @@ type Msg
     | Correo String
     | Apellido String
     | Telefono String
-    | Respondio String
     | Comentario String
     | Enviado
-    | IntentaDeNuez
-    | ResultaDelFocus
 
 
 template : TemplateWithState Question StaticData Model Msg
@@ -70,28 +61,17 @@ template =
 
 init : Question -> ( Model, Cmd Msg )
 init metadata =
-    ( { intentos = 0
-      , usuarioStatus = Shared.Desconocido
+    ( { usuarioStatus = Shared.Desconocido
       , nombre = ""
       , comoSupo = ""
       , correo = ""
       , comentario = ""
       , telefono = ""
       , apellido = ""
-      , respondioBien = False
       , listo = False
-      , nuevoIntento = VaPues
-      , queRespondio = ""
       }
     , Cmd.none
     )
-
-
-type Intentos
-    = VaPues
-    | YaRespondio
-    | VaDeNuevo
-    | YaOk
 
 
 update : Question -> Msg -> Model -> Shared.Model -> ( Model, Cmd Msg, Maybe Shared.SharedMsg )
@@ -123,84 +103,14 @@ update metadata msg model sharedModel =
             in
             ( { model | telefono = String.dropRight 1 conQue ++ conQue1 }, Cmd.none, Nothing )
 
-        Respondio conQue ->
-            let
-                seLaSupo =
-                    if conQue == "4" then
-                        True
-
-                    else
-                        False
-            in
-            ( { model
-                | respondioBien = seLaSupo
-                , nuevoIntento =
-                    if seLaSupo then
-                        YaOk
-
-                    else
-                        YaRespondio
-                , queRespondio = conQue
-              }
-            , if seLaSupo then
-                Task.perform (\_ -> IntentaDeNuez) <| Process.sleep 600
-
-              else
-                Task.perform (\_ -> IntentaDeNuez) <| Process.sleep 500
-            , Nothing
-            )
-
         Comentario cCampo ->
             ( { model | comentario = cCampo }, Cmd.none, Nothing )
 
         Enviado ->
             ( { model | listo = True }
-            , Dom.focus "valor-challenge"
-                |> Task.attempt (\_ -> ResultaDelFocus)
-            , Nothing
-            )
-
-        IntentaDeNuez ->
-            ( { model
-                | intentos = model.intentos + 1
-                , nuevoIntento = VaPues
-                , queRespondio = ""
-                , usuarioStatus =
-                    case ( model.respondioBien, model.usuarioStatus ) of
-                        ( False, Shared.Desconocido ) ->
-                            if model.intentos >= 3 then
-                                Shared.Rechazado
-
-                            else
-                                Shared.Desconocido
-
-                        ( False, Shared.Conocido ) ->
-                            Shared.Conocido
-
-                        ( False, Shared.DiceQueRegresa ) ->
-                            Shared.DiceQueRegresa
-
-                        ( False, Shared.Rechazado ) ->
-                            Shared.Rechazado
-
-                        ( True, Shared.Desconocido ) ->
-                            Shared.Conocido
-
-                        ( True, Shared.Rechazado ) ->
-                            Shared.Rechazado
-
-                        ( True, Shared.Conocido ) ->
-                            Shared.Conocido
-
-                        ( True, Shared.DiceQueRegresa ) ->
-                            Shared.DiceQueRegresa
-              }
             , Cmd.none
             , Nothing
             )
-
-        ResultaDelFocus ->
-            ( model, Cmd.none, Nothing )
 
 
 staticData :
@@ -271,26 +181,42 @@ view model sharedModel allMetadata staticPayload rendered =
                 , TwBp.lg [ Tw.px_8 ]
                 ]
             ]
-            [ viewFormulario model
-            , case ( model.listo, model.usuarioStatus ) of
-                ( True, Shared.Desconocido ) ->
-                    viewChallenge model
+            [ div
+                [ Attr.css [ Tw.relative, Tw.bg_white ] ]
+                [ viewLayout
+                , if not model.listo then
+                    viewFormulario model
 
-                ( True, Shared.Rechazado ) ->
-                    Htmls.text "Shame on you!"
-
-                ( True, Shared.Conocido ) ->
-                    Htmls.text "Wellcome!"
-
-                ( True, Shared.DiceQueRegresa ) ->
-                    Htmls.text "Ya veremos..."
-
-                ( False, _ ) ->
-                    Htmls.text ""
+                  else
+                    div
+                        [ Attr.css [ TwBp.lg [ Tw.h_72 ]]]
+                        [ Htmls.text "Te voy a poner a prueba CABRON" ]
+                ]
             ]
         ]
             |> List.map Htmls.toUnstyled
     }
+
+
+viewLayout : Htmls.Html Msg
+viewLayout =
+    div
+        [ Attr.css [ TwBp.lg [ Tw.absolute, Tw.inset_0 ] ] ]
+        [ div
+            [ Attr.css [ TwBp.lg [ Tw.absolute, Tw.inset_y_0, Tw.right_0, Tw.w_1over2 ] ] ]
+            [ Htmls.img
+                [ Attr.css
+                    [ Tw.h_56
+                    , Tw.w_full
+                    , Tw.object_cover
+                    , TwBp.lg [ Tw.absolute, Tw.h_full ]
+                    ]
+                , Attr.src "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-1.2.1&ixqx=g09zpRVLoT&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1567&q=80"
+                , Attr.alt ""
+                ]
+                []
+            ]
+        ]
 
 
 viewFormulario : Model -> Htmls.Html Msg
@@ -559,228 +485,69 @@ viewFormulario model =
                 ]
     in
     div
-        [ Attr.css [ Tw.relative, Tw.bg_white ] ]
-        [ div
-            [ Attr.css [ TwBp.lg [ Tw.absolute, Tw.inset_0 ] ] ]
-            [ div
-                [ Attr.css [ TwBp.lg [ Tw.absolute, Tw.inset_y_0, Tw.right_0, Tw.w_1over2 ] ] ]
-                [ Htmls.img
-                    [ Attr.css
-                        [ Tw.h_56
-                        , Tw.w_full
-                        , Tw.object_cover
-                        , TwBp.lg [ Tw.absolute, Tw.h_full ]
-                        ]
-                    , Attr.src "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-1.2.1&ixqx=g09zpRVLoT&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1567&q=80"
-                    , Attr.alt ""
-                    ]
-                    []
-                ]
-            ]
-        , div
-            [ Attr.css
-                [ Tw.relative
-                , Tw.pt_12
-                , Tw.pb_16
-                , Tw.px_4
-                , TwBp.sm [ Tw.pt_16, Tw.px_6 ]
-                , TwBp.lg
-                    [ Tw.px_8
-                    , Tw.max_w_7xl
-                    , Tw.mx_auto
-                    , Tw.grid
-                    , Tw.grid_cols_2
-                    ]
-                ]
-            ]
-            [ div
-                [ Attr.css [ TwBp.lg [ Tw.pr_8 ] ] ]
-                [ div
-                    [ Attr.css
-                        [ Tw.max_w_md
-                        , Tw.mx_auto
-                        , TwBp.lg [ Tw.mx_0 ]
-                        , TwBp.sm [ Tw.max_w_lg ]
-                        ]
-                    ]
-                    [ Htmls.h2
-                        [ Attr.css
-                            [ Tw.text_3xl
-                            , Tw.font_extrabold
-                            , Tw.tracking_tight
-                            , TwBp.sm [ Tw.text_4xl ]
-                            ]
-                        ]
-                        [ Htmls.text "Let's work together" ]
-                    , Htmls.p
-                        [ Attr.css
-                            [ Tw.mt_4
-                            , Tw.text_lg
-                            , Tw.text_gray_500
-                            , TwBp.sm [ Tw.mt_3 ]
-                            ]
-                        ]
-                        [ Htmls.text "We’d love to hear from you! Send us a message using the form opposite, or email us. We’d love to hear from you! Send us a message using the form opposite, or email us." ]
-                    , Htmls.form
-                        [ Attr.action "#"
-                        , Attr.method "POST"
-                        , Events.onSubmit Enviado
-                        , Attr.css
-                            [ Tw.mt_9
-                            , Tw.grid
-                            , Tw.grid_cols_1
-                            , Tw.gap_y_6
-                            , TwBp.sm [ Tw.grid_cols_2, Tw.gap_x_8 ]
-                            ]
-                        ]
-                        [ viewCampoNombre
-                        , viewCampoApellido
-                        , viewCampoCorreo
-                        , viewCampoTelefono
-                        , viewCampoComment
-                        , viewComoSupoDeNos
-                        , viewBotonSubmit
-                        ]
-                    ]
+        [ Attr.css
+            [ Tw.relative
+            , Tw.pt_12
+            , Tw.pb_16
+            , Tw.px_4
+            , TwBp.sm [ Tw.pt_16, Tw.px_6 ]
+            , TwBp.lg
+                [ Tw.px_8
+                , Tw.max_w_7xl
+                , Tw.mx_auto
+                , Tw.grid
+                , Tw.grid_cols_2
                 ]
             ]
         ]
-
-
-viewChallenge : Model -> Htmls.Html Msg
-viewChallenge model =
-    div
-        [ class "la-base-modal" ]
         [ div
-            [ Attr.css <|
-                [ Tw.bg_green_100
-                , Tw.shadow
-                , Tw.rounded_lg
-                , Tw.mx_auto
-                , Tw.mt_24
-                , Tw.w_10over12
-                , Tw.h_64
-                , TwBp.md [ Tw.max_w_md, Tw.mx_auto, Tw.mt_48 ]
-                ]
-                    ++ (if model.nuevoIntento == YaRespondio then
-                            [ Tw.animate_bounce ]
-
-                        else
-                            []
-                       )
-            ]
-            [ Htmls.h3
+            [ Attr.css [ TwBp.lg [ Tw.pr_8 ] ] ]
+            [ div
                 [ Attr.css
-                    [ Tw.pt_4
-                    , Tw.ml_3
-                    , Tw.text_xl
-                    , Tw.leading_6
-                    , Tw.font_medium
-                    , Tw.text_gray_900
-                    , TwBp.md [ Tw.ml_6 ]
-                    ]
-                ]
-                [ Htmls.text "Validación Rápida" ]
-            , Htmls.p
-                [ Attr.css
-                    [ Tw.mt_2
-                    , Tw.mx_6
-                    , Tw.text_base
-                    , Tw.leading_5
-                    , Tw.text_gray_500
-                    ]
-                ]
-                [ Htmls.text "Contesta lo siguiente para validar que eres humano y no un bot" ]
-            , div
-                [ Attr.css
-                    [ Tw.w_4over5
-                    , Tw.bg_yellow_100
-                    , Tw.mt_6
+                    [ Tw.max_w_md
                     , Tw.mx_auto
-                    , Tw.h_32
+                    , TwBp.lg [ Tw.mx_0 ]
+                    , TwBp.sm [ Tw.max_w_lg ]
                     ]
                 ]
-                [ Htmls.p
+                [ Htmls.h2
                     [ Attr.css
-                        [ Tw.pt_5
-                        , Tw.pl_12
-                        , Tw.text_base
-                        , Tw.font_medium
-                        , Tw.text_gray_700
+                        [ Tw.text_3xl
+                        , Tw.font_extrabold
+                        , Tw.tracking_tight
+                        , TwBp.sm [ Tw.text_4xl ]
                         ]
                     ]
-                    [ Htmls.text "Resuleve la siguiente ecuación: " ]
-                , div
+                    [ Htmls.text "Let's work together" ]
+                , Htmls.p
                     [ Attr.css
-                        [ Tw.ml_6
-                        , Tw.mt_4
-                        , Tw.flex
-                        , Tw.flex_row
-                        , Tw.items_center
-                        , Tw.content_center
-                        , Tw.justify_center
-                        , Tw.text_base
+                        [ Tw.mt_4
+                        , Tw.text_lg
+                        , Tw.text_gray_500
+                        , TwBp.sm [ Tw.mt_3 ]
                         ]
                     ]
-                    [ Htmls.p
-                        []
-                        [ Htmls.text "7 + " ]
-                    , Htmls.label
-                        [ Attr.css [ Tw.sr_only ]
-                        , Attr.for "valor"
+                    [ Htmls.text "We’d love to hear from you! Send us a message using the form opposite, or email us. We’d love to hear from you! Send us a message using the form opposite, or email us." ]
+                , Htmls.form
+                    [ Attr.action "#"
+                    , Attr.method "POST"
+                    , Events.onSubmit Enviado
+                    , Attr.css
+                        [ Tw.mt_9
+                        , Tw.grid
+                        , Tw.grid_cols_1
+                        , Tw.gap_y_6
+                        , TwBp.sm [ Tw.grid_cols_2, Tw.gap_x_8 ]
                         ]
-                        [ Htmls.text "número" ]
-                    , Htmls.input
-                        [ Attr.css
-                            [ Tw.text_center
-                            , Tw.mx_2
-                            , Tw.w_5
-                            , Tw.rounded_md
-                            , Tw.shadow_sm
-                            , TwBp.sm [ Tw.leading_5, Tw.text_sm ]
-                            ]
-
-                        -- Tw.block, Tw.w_full del .apparel-campo
-                        , Attr.id "valor-challenge"
-                        , case model.nuevoIntento of
-                            VaPues ->
-                                Attr.placeholder "?"
-
-                            YaRespondio ->
-                                Attr.value model.queRespondio
-
-                            VaDeNuevo ->
-                                Attr.value model.queRespondio
-
-                            YaOk ->
-                                Attr.css [ Tw.animate_ping ]
-                        , class "form-input"
-                        , Events.onInput Respondio
-                        ]
-                        []
-                    , Htmls.p
-                        []
-                        [ Htmls.text "= 11" ]
                     ]
-                , if model.intentos >= 1 then
-                    Htmls.p
-                        [ Attr.css
-                            ([ Tw.text_right, Tw.mx_4 ]
-                                ++ (if model.intentos == 1 then
-                                        [ Tw.text_black ]
-
-                                    else if model.intentos == 2 then
-                                        [ Tw.text_red_500 ]
-
-                                    else
-                                        [ Tw.text_red_500, Tw.font_bold, Tw.italic ]
-                                   )
-                            )
-                        ]
-                        [ Htmls.text "Intenta de nuevo!" ]
-
-                  else
-                    Htmls.p [] []
+                    [ viewCampoNombre
+                    , viewCampoApellido
+                    , viewCampoCorreo
+                    , viewCampoTelefono
+                    , viewCampoComment
+                    , viewComoSupoDeNos
+                    , viewBotonSubmit
+                    ]
                 ]
             ]
         ]
