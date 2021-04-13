@@ -46,6 +46,7 @@ type Msg
     | Telefono String
     | Comentario String
     | Enviado
+    | Respondio Bool
 
 
 template : TemplateWithState Question StaticData Model Msg
@@ -108,6 +109,17 @@ update metadata msg model sharedModel =
 
         Enviado ->
             ( { model | listo = True }
+            , Cmd.none
+            , Nothing
+            )
+
+        Respondio conQue ->
+            ( { model | usuarioStatus =
+                if conQue then
+                    Shared.Conocido
+                else
+                    Shared.Rechazado
+                 }
             , Cmd.none
             , Nothing
             )
@@ -189,8 +201,17 @@ view model sharedModel allMetadata staticPayload rendered =
 
                   else
                     div
-                        [ Attr.css [ TwBp.lg [ Tw.h_72 ]]]
-                        [ Htmls.text "Te voy a poner a prueba CABRON" ]
+                        [ Attr.css [ TwBp.lg [ Tw.h_72 ]] ]
+                        [ Htmls.text <|
+                           case model.usuarioStatus of
+                                Shared.Desconocido -> "Vamos a confirmar pues!"
+                                Shared.Conocido -> "HEY! Sos Familia!!"
+                                Shared.Rechazado -> "Pareces un Bot, intenta de nuevo"
+                                _ -> "¿Cómo chingados llegué a este estado?"
+                        , Htmls.node "el-reto"
+                                      [ alResponder Respondio ]
+                                      []
+                        ]
                 ]
             ]
         ]
@@ -551,3 +572,10 @@ viewFormulario model =
                 ]
             ]
         ]
+
+
+alResponder que =
+    Decode.at [ "detail", "resultado" ] Decode.bool
+        |> Decode.map que
+        |> Events.on "responde"
+
