@@ -29,10 +29,6 @@ main =
               , metadata = MetadataNew.decoder -- metadata parser/decoder?
               , body = MarkdownRenderer.view -- body parser?
               }
-            , { extension = "emu"
-              , metadata = MetadataNew.decoder -- metadata parser/decoder?
-              , body = MarkRenderer.view -- body parser?
-              }
             ]
         , site = Site.config
         }
