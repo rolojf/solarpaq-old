@@ -87,7 +87,7 @@ head : StaticPayload Home StaticData -> List (Head.Tag Pages.PathKey)
 head staticPayload =
     Seo.summary
         { canonicalUrlOverride = Nothing
-        , siteName = "elm-pages"
+        , siteName = "SOLARPAQ"
         , image =
             { url = images.iconPng
             , alt = "elm-pages logo"

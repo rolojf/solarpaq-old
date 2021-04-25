@@ -37,7 +37,7 @@ staticData siteMetadata =
 
 canonicalUrl : String
 canonicalUrl =
-    "https://elm-pages.com"
+    "https://solarpaq.com"
 
 
 manifest : Manifest.Config Pages.PathKey

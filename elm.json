@@ -4,7 +4,8 @@
         "src",
         "gen",
         "../elm-pages/src",
-        "../elm-pages/plugins"
+        "../elm-pages/plugins",
+        "../elm-tailwind-modules/gen"
     ],
     "elm-version": "0.19.1",
     "dependencies": {
@@ -28,7 +29,6 @@
             "elm-community/list-extra": "8.2.4",
             "fapian/elm-html-aria": "1.4.0",
             "justinmimbs/date": "3.2.1",
-            "matheus23/elm-default-tailwind-modules": "1.0.0",
             "mdgriffith/elm-markup": "3.0.1",
             "miniBill/elm-codec": "1.2.0",
             "noahzgordon/elm-color-extra": "1.0.2",
