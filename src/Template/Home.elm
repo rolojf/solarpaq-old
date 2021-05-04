@@ -115,11 +115,11 @@ view model sharedModel allMetadata staticPayload rendered =
     { title = staticPayload.metadata.title
     , body =
         [ div
-            [ Attr.css [ Tw.max_w_7xl, Tw.mx_auto, TwBp.lg [ Tw.px_8], TwBp.sm [ Tw.px_6] ] ]
-            [ counterView sharedModel
-            , Htmls.br [] []
+            [ ]
+            [ -- counterView sharedModel
+            {-, Htmls.br [] []
             , Htmls.text "Aquí estaba el listado de la documentación"
-            {-, div [ class "segunda columna" ]
+            , div [ class "segunda columna" ]
                 [ tocView staticPayload.path (Tuple.first rendered)
                 , div
                     [ Attr.css [ Tw.prose, TwBp.lg [ Tw.prose_xl ] ] ]
@@ -128,8 +128,8 @@ view model sharedModel allMetadata staticPayload rendered =
                         |> List.map Htmls.fromUnstyled
                     )
                 ]
-            -}
-            , viewAboveTheFold
+            , -}
+            viewAboveTheFold
             ]
             |> Htmls.toUnstyled
         ]

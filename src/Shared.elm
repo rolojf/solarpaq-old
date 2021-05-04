@@ -204,42 +204,13 @@ view :
     -> (Msg -> msg)
     -> PageView msg
     -> { body : Html msg, title : String }
-view stars page model toMsg pageView =
+view loStatico page model toMsg pageView =
     { body =
         div
             []
             [ Css.Global.global Tw.globalStyles
             , myNav model page
                 |> Htmls.map toMsg
-            {-, Htmls.header
-                [ Attr.css
-                    [ Tw.bg_white
-                    , Tw.shadow_sm
-                    ]
-                ]
-                [ div
-                    [ Attr.css
-                        [ Tw.max_w_7xl
-                        , Tw.mx_auto
-                        , Tw.py_4
-                        , Tw.px_4
-                        , TwBp.lg [ Tw.px_8 ]
-                        , TwBp.sm [ Tw.px_6 ]
-                        ]
-                    ]
-                    [ Htmls.h1
-                        [ Attr.css
-                            [ Tw.text_lg
-                            , TwBp.lg [ Tw.text_2xl ]
-                            , Tw.leading_6
-                            , Tw.font_bold
-                            , Tw.text_gray_800
-                            ]
-                        ]
-                        [ Htmls.text pageView.title ]
-                    ]
-                ]
-            -}
             , Htmls.main_
                 []
                 ((incrementView model |> Htmls.map toMsg)
