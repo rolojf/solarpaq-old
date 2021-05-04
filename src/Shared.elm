@@ -211,7 +211,7 @@ view stars page model toMsg pageView =
             [ Css.Global.global Tw.globalStyles
             , myNav model page
                 |> Htmls.map toMsg
-            , Htmls.header
+            {-, Htmls.header
                 [ Attr.css
                     [ Tw.bg_white
                     , Tw.shadow_sm
@@ -239,6 +239,7 @@ view stars page model toMsg pageView =
                         [ Htmls.text pageView.title ]
                     ]
                 ]
+            -}
             , Htmls.main_
                 []
                 ((incrementView model |> Htmls.map toMsg)
