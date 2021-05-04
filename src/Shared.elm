@@ -213,22 +213,17 @@ view loStatico page model toMsg pageView =
                 |> Htmls.map toMsg
             , Htmls.main_
                 []
-                ((incrementView model |> Htmls.map toMsg)
-                    :: (pageView.body
-                            |> List.map Htmls.fromUnstyled
-                       )
-                )
+                (pageView.body |> List.map Htmls.fromUnstyled)
             , viewFooter
-            ]
-            |> Htmls.toUnstyled
+            ] |> Htmls.toUnstyled
     , title = pageView.title
     }
 
-
+{-
 incrementView model =
     div [ Events.onClick Increment ]
         [ Htmls.text <| "Shared count: " ++ String.fromInt model.counter ]
-
+-}
 
 myNav :
     Model
