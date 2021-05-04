@@ -120,8 +120,7 @@ view model sharedModel allMetadata staticPayload rendered =
             {-, Htmls.br [] []
             , Htmls.text "Aquí estaba el listado de la documentación"
             , div [ class "segunda columna" ]
-                [ tocView staticPayload.path (Tuple.first rendered)
-                , div
+                [ div
                     [ Attr.css [ Tw.prose, TwBp.lg [ Tw.prose_xl ] ] ]
                     (Tuple.second rendered
                         |> List.map (Html.map never)
@@ -140,24 +139,6 @@ counterView : Shared.Model -> Htmls.Html Msg
 counterView sharedModel =
     Htmls.text <| "Docs count: " ++ String.fromInt sharedModel.counter
 
-
-tocView : PagePath Pages.PathKey -> MarkdownRenderer.TableOfContents -> Htmls.Html msg
-tocView path toc =
-    div [ class "toc uno" ]
-        [ Htmls.text "Table of Contents"
-        , div [ class "toc dos" ]
-            (toc
-                |> List.map
-                    (\heading ->
-                        Htmls.a
-                            [ Attr.href
-                                (PagePath.toString path ++ "#" ++ heading.anchorId)
-                            , class "clase de ligas"
-                            ]
-                            [ Htmls.text heading.name ]
-                    )
-            )
-        ]
 
 viewAboveTheFold : Htmls.Html msg
 viewAboveTheFold =
