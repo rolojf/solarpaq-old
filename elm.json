@@ -4,7 +4,6 @@
         "src",
         "gen",
         "../elm-pages/src",
-        "../elm-pages/plugins",
         "../elm-tailwind-modules/gen"
     ],
     "elm-version": "0.19.1",
