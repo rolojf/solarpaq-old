@@ -116,11 +116,8 @@ view model sharedModel allMetadata staticPayload rendered =
     , body =
         [ div
             [ ]
-            [ -- counterView sharedModel
-            {-, Htmls.br [] []
-            , Htmls.text "Aquí estaba el listado de la documentación"
-            , div [ class "segunda columna" ]
-                [ div
+            [
+            {- div
                     [ Attr.css [ Tw.prose, TwBp.lg [ Tw.prose_xl ] ] ]
                     (Tuple.second rendered
                         |> List.map (Html.map never)
@@ -133,11 +130,6 @@ view model sharedModel allMetadata staticPayload rendered =
             |> Htmls.toUnstyled
         ]
     }
-
-
-counterView : Shared.Model -> Htmls.Html Msg
-counterView sharedModel =
-    Htmls.text <| "Docs count: " ++ String.fromInt sharedModel.counter
 
 
 viewAboveTheFold : Htmls.Html msg
