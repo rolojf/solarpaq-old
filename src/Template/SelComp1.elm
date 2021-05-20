@@ -3,9 +3,10 @@ module Template.SelComp1 exposing (Model, Msg, decoder, template)
 import DropList
 import Head
 import Head.Seo as Seo
-import Html exposing (Html, div)
-import Html.Attributes as Attr exposing (class)
-import Html.Attributes.Aria as Aria
+import Html exposing (Html)
+import Html.Styled as Htmls exposing (div)
+import Html.Styled.Attributes as Attr exposing (class)
+import Html.Styled.Attributes.Aria as Aria
 import Json.Decode as Decode
 import OptimizedDecoder as D
 import OptionRadio
@@ -16,6 +17,8 @@ import Platform.Cmd
 import Secrets
 import Shared
 import Site
+import Tailwind.Breakpoints as TwBp
+import Tailwind.Utilities as Tw
 import Template exposing (StaticPayload, TemplateWithState)
 import TemplateMetadata exposing (SelComp1)
 import TemplateType exposing (TemplateType)
@@ -221,50 +224,59 @@ view model sharedModel allMetadata staticPayload rendered =
     { title = staticPayload.metadata.title
     , body =
         [ div
-            [ class "min-h-3/4 bg-gray-100" ]
+            [ Attr.css [ Tw.min_h_3over4, Tw.bg_gray_100 ] ]
             [ div
-                [ class "py-6" ]
+                [ Attr.css [ Tw.py_6 ] ]
                 [ div
-                    [ class "max-w-3xl mx-auto sm:px-6 lg:max-w-7xl lg:px-8 lg:grid lg:grid-cols-12 lg:gap-8" ]
+                    [ Attr.css
+                        [ Tw.max_w_3xl
+                        , Tw.mx_auto
+                        , TwBp.lg [ Tw.max_w_7xl, Tw.px_8, Tw.grid, Tw.grid_cols_12, Tw.gap_8 ]
+                        , TwBp.sm [ Tw.px_6 ]
+                        ]
+                    ]
                     [ div
-                        [ class "hidden lg:block lg:col-span-3" ]
-                        [ Html.section
-                            [ class "lg:min-h-full bg-gray-200" ]
+                        [ Attr.css
+                            [ Tw.hidden
+                            , TwBp.lg [ Tw.block, Tw.col_span_3 ]
+                            ]
+                        ]
+                        [ Htmls.section
+                            [ Attr.css [ TwBp.lg [ Tw.min_h_full, Tw.bg_gray_200 ] ] ]
                             [ div
                                 [ Aria.ariaLabel "Sidebar"
-                                , class "sticky top-6 divide-y divide-gray-400"
+                                , Attr.css [ Tw.sticky, Tw.top_6, Tw.divide_y, Tw.divide_gray_400 ]
                                 ]
                                 [ counterView sharedModel
-                                , Html.br [] []
-                                , Html.text "Mi Contenido en SideBar"
+                                , Htmls.br [] []
+                                , Htmls.text "Mi Contenido en SideBar"
                                 ]
                             ]
                         ]
-                    , Html.section
-                        [ class "lg:col-span-9" ]
-                        ((OptionRadio.view
+                    , Htmls.section
+                        [ Attr.css [ TwBp.lg [ Tw.col_span_9 ] ] ]
+                        [ OptionRadio.view
                             "Seleccion Inversores"
                             model.tipoDeInversorEscogido
                             opcionesPalRadio
-                            |> Html.map RadioSeleccionado
-                         )
-                            :: (DropList.view (actualizaDropList model.dropList staticPayload.static.panelSolar)
-                                    -- -- falta aclarar esto ->model.dropList
-                                    |> Html.map DropList
-                               )
-                            :: (Tuple.second rendered
-                                    |> List.map (Html.map never)
-                               )
-                        )
-                    , div
-                        [ class "mt-4 text-xl text-center" ]
-                        [ Html.text "" --<| Debug.toString staticPayload.static
-
-                        -- , Html.text staticPayload.static.panelSolar.label
+                            |> Htmls.map RadioSeleccionado
+                        , DropList.view
+                            (actualizaDropList
+                                model.dropList
+                                staticPayload.static.panelSolar
+                            )
+                            |> Htmls.map DropList
                         ]
+                    , div
+                        [ Attr.css [ Tw.mt_4, Tw.text_xl, Tw.text_center ] ]
+                        (Tuple.second rendered
+                            |> List.map (Html.map never)
+                            |> List.map Htmls.fromUnstyled
+                        )
                     ]
                 ]
             ]
+            |> Htmls.toUnstyled
         ]
     }
 
@@ -320,6 +332,6 @@ opcionesPalRadio =
     ]
 
 
-counterView : Shared.Model -> Html Msg
+counterView : Shared.Model -> Htmls.Html Msg
 counterView sharedModel =
-    Html.text <| "Docs count: " ++ String.fromInt sharedModel.counter
+    Htmls.text <| "Docs count: " ++ String.fromInt sharedModel.counter

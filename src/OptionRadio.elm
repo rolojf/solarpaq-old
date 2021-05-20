@@ -1,9 +1,11 @@
 module OptionRadio exposing (..)
 
-import Html exposing (Html, div)
-import Html.Attributes as Attr exposing (class)
-import Html.Attributes.Aria as Aria
-import Html.Events
+import Css
+import Html.Styled as Htmls exposing (div)
+import Html.Styled.Attributes as Attr exposing (class)
+import Html.Styled.Events as Events
+import Tailwind.Breakpoints as TwBp
+import Tailwind.Utilities as Tw
 
 
 type alias Option varianteTipo =
@@ -33,76 +35,78 @@ update cualOpcion model =
     { model | seleccionado = cualOpcion }
 
 
-view : String -> Model varianteTipo -> List (Option varianteTipo) -> Html varianteTipo
+view : String -> Model varianteTipo -> List (Option varianteTipo) -> Htmls.Html varianteTipo
 view queOpcionDamos model opciones =
-    Html.fieldset []
-        [ Html.legend
-            [ class "sr-only" ]
-            [ Html.text queOpcionDamos ]
+    Htmls.fieldset []
+        [ Htmls.legend
+            [ Attr.css [ Tw.sr_only ] ]
+            [ Htmls.text queOpcionDamos ]
         , div
-            [ class "bg-white rounded-md -space-y-px max-w-md" ]
+            [ Attr.css [ Tw.bg_white, Tw.rounded_md, Tw.neg_space_y_px, Tw.max_w_md ] ]
             (opciones
                 |> List.map (viewOption model)
             )
         ]
 
 
-viewOption : Model resultadoEsperado -> Option resultadoEsperado -> Html resultadoEsperado
+viewOption : Model resultadoEsperado -> Option resultadoEsperado -> Htmls.Html resultadoEsperado
 viewOption model radioOp =
     let
-        claseSegunSeleccion : String
+        claseSegunSeleccion : List Css.Style
         claseSegunSeleccion =
             case ( radioOp.tipo == model.seleccionado, radioOp.extremo ) of
                 ( True, False ) ->
-                    "relative border bg-indigo-50 border-indigo-200 z-10 rounded-bl-md rounded-br-md p-4 flex"
+                    [ Tw.relative, Tw.border, Tw.bg_indigo_50, Tw.border_indigo_200, Tw.z_10, Tw.rounded_bl_md, Tw.rounded_br_md, Tw.p_4, Tw.flex ]
 
                 ( False, False ) ->
-                    "relative border border-gray-200 p-4 flex"
+                    [ Tw.relative, Tw.border, Tw.border_gray_200, Tw.p_4, Tw.flex ]
 
                 ( True, True ) ->
-                    "relative border bg-indigo-50 border-indigo-200 z-10 rounded-bl-md rounded-br-md p-4 flex"
+                    [ Tw.relative, Tw.border, Tw.bg_indigo_50, Tw.border_indigo_200, Tw.z_10, Tw.rounded_bl_md, Tw.rounded_br_md, Tw.p_4, Tw.flex ]
 
                 ( False, True ) ->
-                    "relative border border-gray-200 rounded-bl-md rounded-br-md p-4 flex"
+                    [ Tw.relative, Tw.border, Tw.border_gray_200, Tw.rounded_bl_md, Tw.rounded_br_md, Tw.p_4, Tw.flex ]
     in
     div
-        [ class claseSegunSeleccion ]
+        [ Attr.css claseSegunSeleccion ]
         [ div
-            [ class "flex items-center h-5" ]
-            [ Html.input
+            [ Attr.css [ Tw.flex, Tw.items_center, Tw.h_5 ] ]
+            [ Htmls.input
                 [ Attr.id radioOp.id
                 , Attr.name radioOp.name
                 , Attr.type_ "radio"
-                , Html.Events.onCheck (\_ -> radioOp.tipo)
-                , class "focus:ring-indigo-500 h-4 w-4 text-indigo-600 cursor-pointer border-gray-300"
+                , Events.onCheck (\_ -> radioOp.tipo)
+                , Attr.css [ Css.focus [ Tw.ring_indigo_500 ], Tw.h_4, Tw.w_4, Tw.text_indigo_600, Tw.cursor_pointer, Tw.border_gray_300 ]
                 ]
                 []
             ]
-        , Html.label
+        , Htmls.label
             [ Attr.for radioOp.id
-            , class "ml-3 flex flex-col cursor-pointer"
+            , Attr.css [ Tw.ml_3, Tw.flex, Tw.flex_col, Tw.cursor_pointer ]
             ]
-            [ Html.span
-                [ class <|
+            [ Htmls.span
+                [ Attr.css <|
                     if radioOp.tipo == model.seleccionado then
-                        "text-indigo-900"
+                        [ Tw.text_indigo_900 ]
 
                     else
-                        "text-gray-900"
+                        [ Tw.text_gray_900 ]
                 ]
-                [ Html.span
-                    [ class "block text-sm font-medium" ]
-                    [ Html.text radioOp.descripcion ]
-                , Html.span
-                    [ class <|
-                        if radioOp.tipo == model.seleccionado then
-                            "text-indigo-700"
+                [ Htmls.span
+                    [ Attr.css [ Tw.block, Tw.text_sm, Tw.font_medium ] ]
+                    [ Htmls.text radioOp.descripcion ]
+                , Htmls.span
+                    [ Attr.css <|
+                        List.append
+                            [ Tw.block, Tw.text_sm ]
+                            (if radioOp.tipo == model.seleccionado then
+                                [ Tw.text_indigo_700 ]
 
-                        else
-                            "text-gray-500"
-                    , class "block text-sm"
+                             else
+                                [ Tw.text_gray_500 ]
+                            )
                     ]
-                    [ Html.text radioOp.nota ]
+                    [ Htmls.text radioOp.nota ]
                 ]
             ]
         ]

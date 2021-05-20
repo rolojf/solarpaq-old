@@ -1,14 +1,17 @@
 module DropList exposing (..)
 
 import Browser.Dom as Dom
-import Html exposing (Html, div)
-import Html.Attributes as Attr exposing (class)
-import Html.Attributes.Aria as Aria
-import Html.Events
+import Css
+import Html.Styled as Htmls exposing (div)
+import Html.Styled.Attributes as Attr exposing (class)
+import Html.Styled.Attributes.Aria as Aria
+import Html.Styled.Events as Events
 import Json.Decode as Decode
 import Shared
-import Svg
-import Svg.Attributes
+import Svg.Styled as Svg
+import Svg.Styled.Attributes
+import Tailwind.Breakpoints as TwBp
+import Tailwind.Utilities as Tw
 import Task
 import TemplateMetadata exposing (SelComp1)
 
@@ -175,22 +178,37 @@ dropdownElementId =
     "dropdown"
 
 
-view : Model -> Html Msg
+view : Model -> Htmls.Html Msg
 view model =
-    div [ class "mt-4 w-96" ]
-        [ Html.label
+    div [ Attr.css [ Tw.mt_4, Tw.w_96 ] ]
+        [ Htmls.label
             [ Attr.id "listbox-label"
-            , class "block text-sm font-medium text-gray-700"
+            , Attr.css [ Tw.block, Tw.text_sm, Tw.font_medium, Tw.text_gray_700 ]
             ]
-            [ Html.text "Asignado a:" ]
+            [ Htmls.text "Asignado a:" ]
         , div
-            [ class "mt-1 relative"
+            [ Attr.css [ Tw.mt_1, Tw.relative ]
             , Attr.id dropdownElementId
-            , Html.Events.preventDefaultOn "keydown" keyDecoder
-            , Html.Events.on "focusout" (onFocusOut dropdownElementId)
+            , Events.preventDefaultOn "keydown" keyDecoder
+            , Events.on "focusout" (onFocusOut dropdownElementId)
             ]
-            [ Html.button
-                [ class "relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            [ Htmls.button
+                [ Attr.css
+                    [ Tw.relative
+                    , Tw.w_full
+                    , Tw.bg_white
+                    , Tw.border
+                    , Tw.border_gray_300
+                    , Tw.rounded_md
+                    , Tw.shadow_sm
+                    , Tw.pl_3
+                    , Tw.pr_10
+                    , Tw.py_2
+                    , Tw.text_left
+                    , Tw.cursor_default
+                    , Css.focus [ Tw.outline_none, Tw.ring_1, Tw.ring_indigo_500, Tw.border_indigo_500 ]
+                    , TwBp.sm [ Tw.text_sm ]
+                    ]
                 , Aria.ariaHasPopup "listbox"
                 , Aria.ariaExpanded <|
                     if model.open then
@@ -199,35 +217,36 @@ view model =
                     else
                         "false"
                 , Aria.ariaLabelledby "listbox-label"
-                , Html.Events.onClick Toggle
+                , Events.onClick Toggle
                 ]
                 [ div
-                    [ class "flex items-center" ]
-                    [ Html.span
+                    [ Attr.css [ Tw.flex, Tw.items_center ] ]
+                    [ Htmls.span
                         [ Aria.ariaLabel "Online"
-                        , class "bg-green-400 flex-shrink-0 inline-block h-2 w-2 rounded-full"
+                        , Attr.css [ Tw.bg_green_400, Tw.flex_shrink_0, Tw.inline_block, Tw.h_2, Tw.w_2, Tw.rounded_full ]
                         ]
                         []
-                    , Html.span
-                        [ class <|
-                            "ml-3 block truncate"
-                                ++ (case model.selectedId of
-                                        Just _ ->
-                                            " font-bold"
+                    , Htmls.span
+                        [ Attr.css <|
+                            List.append
+                                [ Tw.ml_3, Tw.block, Tw.truncate ]
+                                (case model.selectedId of
+                                    Just _ ->
+                                        [ Tw.font_bold ]
 
-                                        Nothing ->
-                                            ""
-                                   )
+                                    Nothing ->
+                                        []
+                                )
                         ]
-                        [ Html.text (getButtonText model "Select...") ]
+                        [ Htmls.text (getButtonText model "Select...") ]
                     ]
                 ]
             , if model.open then
                 viewList model
 
               else
-                Html.span
-                    [ class "absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none"
+                Htmls.span
+                    [ Attr.css [ Tw.absolute, Tw.inset_y_0, Tw.right_0, Tw.flex, Tw.items_center, Tw.pr_2, Tw.pointer_events_none ]
                     , Aria.ariaHidden True
                     ]
                     [ heroIconSolidSelector ]
@@ -237,14 +256,14 @@ view model =
 
 heroIconSolidSelector =
     Svg.svg
-        [ Svg.Attributes.class "h-5 w-5 text-gray-400"
-        , Svg.Attributes.viewBox "0 0 20 20"
-        , Svg.Attributes.fill "currentColor"
+        [ Svg.Styled.Attributes.class "h-5 w-5 text-gray-400"
+        , Svg.Styled.Attributes.viewBox "0 0 20 20"
+        , Svg.Styled.Attributes.fill "currentColor"
         ]
         [ Svg.path
-            [ Svg.Attributes.fillRule "evenodd"
-            , Svg.Attributes.d "M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-            , Svg.Attributes.clipRule "evenodd"
+            [ Svg.Styled.Attributes.fillRule "evenodd"
+            , Svg.Styled.Attributes.d "M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+            , Svg.Styled.Attributes.clipRule "evenodd"
             ]
             []
         ]
@@ -252,25 +271,36 @@ heroIconSolidSelector =
 
 heroIconSolidCheckMark =
     Svg.svg
-        [ Svg.Attributes.class "h-5 w-5"
-        , Svg.Attributes.viewBox "0 0 20 20"
-        , Svg.Attributes.fill "currentColor"
+        [ Svg.Styled.Attributes.class "h-5 w-5"
+        , Svg.Styled.Attributes.viewBox "0 0 20 20"
+        , Svg.Styled.Attributes.fill "currentColor"
         ]
         [ Svg.path
-            [ Svg.Attributes.fillRule "evenodd"
-            , Svg.Attributes.d "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-            , Svg.Attributes.clipRule "evenodd"
+            [ Svg.Styled.Attributes.fillRule "evenodd"
+            , Svg.Styled.Attributes.d "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+            , Svg.Styled.Attributes.clipRule "evenodd"
             ]
             []
         ]
 
 
-viewList : Model -> Html Msg
+viewList : Model -> Htmls.Html Msg
 viewList model =
     div
-        [ class "absolute mt-1 w-full rounded-md bg-white shadow-lg" ]
-        [ Html.ul
-            [ class "max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm"
+        [ Attr.css [ Tw.absolute, Tw.mt_1, Tw.w_full, Tw.rounded_md, Tw.bg_white, Tw.shadow_lg ] ]
+        [ Htmls.ul
+            [ Attr.css
+                [ Tw.max_h_60
+                , Tw.rounded_md
+                , Tw.py_1
+                , Tw.text_base
+                , Tw.ring_1
+                , Tw.ring_black
+                , Tw.ring_opacity_5
+                , Tw.overflow_auto
+                , Css.focus [ Tw.outline_none ]
+                , TwBp.sm [ Tw.text_sm ]
+                ]
             , Attr.attribute "role" "listbox"
             , Aria.ariaLabelledby "listbox-label"
             , Aria.ariaActiveDescendant "listbox-item-3"
@@ -282,18 +312,18 @@ viewList model =
         ]
 
 
-viewOption : Model -> Option -> Html Msg
+viewOption : Model -> Option -> Htmls.Html Msg
 viewOption model option =
     let
         isSelected =
             maybeEqual model.selectedId option.id
     in
-    Html.li
+    Htmls.li
         [ Attr.attribute "role" "option"
         , Attr.id option.id
         , Attr.tabindex -1
-        , Html.Events.onClick (SelectOption option.id)
-        , class "text-gray-900 cursor-default select-none relative py-2 pl-3 pr-9"
+        , Events.onClick (SelectOption option.id)
+        , Attr.css [ Tw.text_gray_900, Tw.cursor_default, Tw.select_none, Tw.relative, Tw.py_2, Tw.pl_3, Tw.pr_9 ]
         , Aria.ariaSelected <|
             if isSelected then
                 "true"
@@ -302,34 +332,35 @@ viewOption model option =
                 "false"
         ]
         [ div
-            [ class "flex items-center" ]
-            [ Html.span
-                [ class "bg-green-400 flex-shrink-0 inline-block h-2 w-2 rounded-full"
+            [ Attr.css [ Tw.flex, Tw.items_center ] ]
+            [ Htmls.span
+                [ Attr.css [ Tw.bg_green_400, Tw.flex_shrink_0, Tw.inline_block, Tw.h_2, Tw.w_2, Tw.rounded_full ]
                 , Aria.ariaLabel "Online"
                 ]
                 []
-            , Html.span
-                [ class <|
-                    "ml-3 block truncate "
-                        ++ (if isSelected then
-                                "font-semibold"
+            , Htmls.span
+                [ Attr.css <|
+                    List.append
+                        [ Tw.ml_3, Tw.block, Tw.truncate ]
+                        (if isSelected then
+                            [ Tw.font_semibold ]
 
-                            else if maybeEqual model.focusedId option.id then
-                                "text-white font-normal bg-indigo-600"
+                         else if maybeEqual model.focusedId option.id then
+                            [ Tw.text_white, Tw.font_normal, Tw.bg_indigo_600 ]
 
-                            else
-                                "text-gray-900 text-normal"
-                           )
+                         else
+                            [ Tw.text_gray_900, Tw.text_base ]
+                        )
                 ]
-                [ Html.text option.label
-                , Html.span
-                    [ class "sr-only" ]
-                    [ Html.text "is Online" ]
+                [ Htmls.text option.label
+                , Htmls.span
+                    [ Attr.css [ Tw.sr_only ] ]
+                    [ Htmls.text "is Online" ]
                 ]
             ]
         , if isSelected then
-            Html.span
-                [ class "absolute inset-y-0 right-0 flex items-center pr-4"
+            Htmls.span
+                [ Attr.css [ Tw.absolute, Tw.inset_y_0, Tw.right_0, Tw.flex, Tw.items_center, Tw.pr_4 ]
                 , Aria.ariaHidden True
                 ]
                 [ heroIconSolidCheckMark ]
